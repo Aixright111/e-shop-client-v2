@@ -25,7 +25,7 @@ function Home() {
       <Navbar />
       <div className="home-content">
         <h1 className="home-title">欢迎来到 E-Shop</h1>
-        <p className="home-subtitle">发现最好的商品，享受便捷的购物体验</p>
+        <p className="home-subtitle">服务于最好的商品，享受便捷的交易体验</p>
         <button className="home-cta-btn" onClick={handleStartShopping}>
           开始购物
         </button>

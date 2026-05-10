@@ -90,6 +90,218 @@
   color: #333;
 }
 
+/* ─── Header Actions ─── */
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.chat-offer-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.chat-offer-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Offer Panel ─── */
+.offer-panel {
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.offer-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.offer-close-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #999;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.offer-close-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.offer-products {
+  padding: 0 12px 8px;
+  min-height: 60px;
+}
+
+.offer-loading,
+.offer-empty {
+  text-align: center;
+  padding: 20px 0;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.offer-products-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 4px 8px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.offer-products-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.offer-products-scroll::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 2px;
+}
+
+.offer-products-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.offer-product-card {
+  flex: 0 0 110px;
+  border: 2px solid #eee;
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  text-align: center;
+}
+
+.offer-product-card:hover {
+  border-color: #667eea;
+}
+
+.offer-product-card.selected {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+  background: #f8f9ff;
+}
+
+.offer-product-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #f5f5f5;
+  display: block;
+  margin: 0 auto;
+}
+
+.offer-product-name {
+  font-size: 0.75rem;
+  color: #333;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.offer-product-price {
+  font-size: 0.8rem;
+  color: #e74c3c;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.offer-confirm-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.offer-price-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.offer-price-label {
+  font-size: 0.82rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.offer-price-sign {
+  font-size: 0.9rem;
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.offer-price-input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  min-width: 0;
+}
+
+.offer-price-input:focus {
+  border-color: #667eea;
+}
+
+.offer-confirm-btn {
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.offer-confirm-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.offer-confirm-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.offer-hours-input {
+  flex: none;
+  width: 70px;
+}
+
+.offer-hours-unit {
+  font-size: 0.82rem;
+  color: #999;
+  white-space: nowrap;
+}
+
 /* ─── Messages ─── */
 .chat-messages {
   flex: 1;
@@ -226,4 +438,75 @@
   .chat-dialog {
     width: 100vw;
   }
+}
+
+/* ─── Offer List in Messages ─── */
+.chat-offer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.chat-offer-list-title {
+  font-size: 0.78rem;
+  color: #999;
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+}
+
+.chat-offer-list-title::before,
+.chat-offer-list-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eee;
+}
+
+.chat-offer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.chat-offer-item-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #f5f5f5;
+  flex-shrink: 0;
+}
+
+.chat-offer-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.chat-offer-item-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-offer-item-price {
+  font-size: 0.8rem;
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.chat-offer-item-hours {
+  font-size: 0.72rem;
+  color: #999;
 }

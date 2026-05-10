@@ -61,3 +61,4 @@ export async function markMessagesAsReadApi(conversationId, token) {
   });
   return res.json();
 }
+

@@ -100,7 +100,14 @@ function ProductDetail() {
               <h2 className="detail-name">{product.name}</h2>
               <p className="detail-desc">{product.description}</p>
 
-              <div className="detail-seller" style={{ cursor: 'pointer' }} onClick={() => navigate(`/store/${sellerId}`)}>
+              <div className="detail-seller" style={{ cursor: 'pointer' }} onClick={() => {
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                if (currentUser.id === sellerId) {
+                  navigate('/my-store');
+                } else {
+                  navigate(`/store/${sellerId}`);
+                }
+              }}>
                 <span className="seller-label">卖家信息</span>
                 <div className="seller-info">
                   <img
