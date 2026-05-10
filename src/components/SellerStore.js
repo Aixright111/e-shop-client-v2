@@ -1,0 +1,155 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
+import { getUserProductsApi } from '../api/product';
+import './Products.css';
+
+function SellerStore() {
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const PAGE_SIZE = 10;
+
+  useEffect(() => {
+    fetchProducts(currentPage);
+  }, [currentPage, userId]);
+
+  const fetchProducts = async (page) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getUserProductsApi(userId, page, PAGE_SIZE);
+      if (res.code === 0 && res.data) {
+        const items = res.data.items || [];
+        const total = res.data.total || 0;
+        const pages = Math.ceil(total / PAGE_SIZE);
+
+        if (items.length === 0 && page > 0 && total > 0) {
+          setCurrentPage(0);
+          return;
+        }
+
+        setProducts(items);
+        setTotalPages(pages);
+      } else {
+        setError(res.message || '获取商品列表失败');
+      }
+    } catch {
+      setError('网络错误，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible);
+    if (end - start < maxVisible) {
+      start = Math.max(0, end - maxVisible);
+    }
+    for (let i = start; i < end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="products-container">
+      <Navbar />
+      <div className="products-banner">
+        <div className="products-banner-inner">
+          <div>
+            <h1>卖家店铺</h1>
+            <p className="products-banner-sub">该卖家的所有商品</p>
+          </div>
+        </div>
+      </div>
+      <div className="products-content">
+
+        {loading && (
+          <div className="products-loading">
+            <div className="loading-spinner" />
+            加载中...
+          </div>
+        )}
+
+        {error && (
+          <div className="products-error">
+            <span className="products-error-icon">!</span>
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && products.length === 0 && (
+          <div className="products-empty">
+            <span className="products-empty-icon">📦</span>
+            <p>该卖家暂无商品</p>
+          </div>
+        )}
+
+        {!loading && !error && products.length > 0 && (
+          <>
+            <div className="products-grid">
+              {products.map((product) => (
+                <div key={product.id} className="product-card" onClick={() => navigate(`/product/${product.id}`)}>
+                  <div className="product-image-wrapper">
+                    <img src={product.image || product.imageUrl} alt={product.name} className="product-image" loading="lazy" />
+                  </div>
+                  <div className="product-info">
+                    <h3 className="product-name">{product.name}</h3>
+                    <p className="product-description">{product.description}</p>
+                    <div className="product-footer">
+                      <span className="product-price">{product.price}</span>
+                      <button className="buy-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }}>
+                        购买
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 0}
+                >
+                  上一页
+                </button>
+
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    className={`pagination-btn ${page === currentPage ? 'active' : ''}`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page + 1}
+                  </button>
+                ))}
+
+                <button
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage >= totalPages - 1}
+                >
+                  下一页
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default SellerStore;
