@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getOrderDetailApi, commitOrderApi, payOrderApi } from '../api/order';
+import { getUserByIdApi } from '../api/chat';
 import Navbar from './Navbar';
+import ChatDialog from './ChatDialog';
 import './OrderDetail.css';
 
 function OrderDetail() {
@@ -11,6 +13,7 @@ function OrderDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [chatTarget, setChatTarget] = useState(null);
 
   const token = localStorage.getItem('token');
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -77,6 +80,31 @@ function OrderDetail() {
   const canCommit = isSeller && !order?.isCommit;
   const canPay = isBuyer && order?.isCommit && !order?.isPay;
 
+  const handleOpenChat = async () => {
+    if (isSeller) {
+      setChatTarget({
+        sellerId: order.buyerid,
+        sellerName: order.userVO?.name || '买家',
+        sellerAvatar: order.userVO?.avatarUrl || '',
+      });
+    } else if (isBuyer) {
+      try {
+        const res = await getUserByIdApi(order.sellerid, token);
+        if (res.code === 0) {
+          setChatTarget({
+            sellerId: order.sellerid,
+            sellerName: res.data.name || '卖家',
+            sellerAvatar: res.data.avatarUrl || '',
+          });
+        } else {
+          setChatTarget({ sellerId: order.sellerid, sellerName: '卖家', sellerAvatar: '' });
+        }
+      } catch {
+        setChatTarget({ sellerId: order.sellerid, sellerName: '卖家', sellerAvatar: '' });
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="order-detail-container">
@@ -110,6 +138,14 @@ function OrderDetail() {
   return (
     <div className="order-detail-container">
       <Navbar />
+      {chatTarget && (
+        <ChatDialog
+          sellerId={chatTarget.sellerId}
+          sellerName={chatTarget.sellerName}
+          sellerAvatar={chatTarget.sellerAvatar}
+          onClose={() => setChatTarget(null)}
+        />
+      )}
       <div className="order-detail-content">
         <button className="order-detail-back" onClick={() => navigate(-1)}>
           &larr; 返回
@@ -132,7 +168,28 @@ function OrderDetail() {
             </div>
           </div>
 
+          <div className="order-detail-user" onClick={handleOpenChat}>
+            <span className="order-detail-user-label">
+              {isSeller ? '买家信息' : '卖家信息'}
+            </span>
+            <div className="order-detail-user-info">
+              {isSeller && order.userVO?.avatarUrl && (
+                <img src={order.userVO.avatarUrl} alt="" className="order-detail-user-avatar" />
+              )}
+              <span className="order-detail-user-name">
+                {isSeller ? (order.userVO?.name || '买家') :  (order.userVO?.name || '卖家')}
+              </span>
+              <span className="order-detail-user-arrow">&gt;</span>
+            </div>
+          </div>
+
           <div className="order-detail-status-section">
+            {order.isExpired && (
+              <div className="order-detail-meta-row">
+                <span className="order-detail-meta-label">订单状态</span>
+                <span className="order-detail-badge badge-expired">已过期</span>
+              </div>
+            )}
             <div className="order-detail-meta-row">
               <span className="order-detail-meta-label">卖家确认</span>
               <span className={`order-detail-badge ${order.isCommit ? 'badge-done' : 'badge-pending'}`}>
@@ -152,9 +209,9 @@ function OrderDetail() {
               <button
                 className="order-detail-btn btn-commit"
                 onClick={handleCommit}
-                disabled={order.isCommit || actionLoading}
+                disabled={order.isCommit || actionLoading || order.isExpired}
               >
-                {actionLoading ? '处理中...' : order.isCommit ? '已确认' : '确认订单'}
+                {order.isExpired ? '已过期' : actionLoading ? '处理中...' : order.isCommit ? '已确认' : '确认订单'}
               </button>
             </div>
           )}
@@ -164,9 +221,9 @@ function OrderDetail() {
               <button
                 className="order-detail-btn btn-pay"
                 onClick={handlePay}
-                disabled={!canPay || actionLoading}
+                disabled={!canPay || actionLoading || order.isExpired}
               >
-                {actionLoading ? '处理中...' : order.isPay ? '已付款' : canPay ? '付款' : '等待卖家确认'}
+                {order.isExpired ? '已过期' : actionLoading ? '处理中...' : order.isPay ? '已付款' : canPay ? '付款' : '等待卖家确认'}
               </button>
             </div>
           )}

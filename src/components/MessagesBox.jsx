@@ -48,7 +48,7 @@ function MessagesBox() {
           } catch {}
           return { ...conv, otherUserName, otherUserAvatar };
         }));
-        setConversations(enriched);
+        setConversations(enriched.filter((c) => c.lastMessage));
       } else {
         setError(res.message || '获取消息列表失败');
       }

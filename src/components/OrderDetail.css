@@ -104,9 +104,62 @@
   margin-bottom: 8px;
 }
 
+.order-detail-product-price {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #e74c3c;
+  margin-bottom: 6px;
+}
+
 .order-detail-hours {
   font-size: 0.9rem;
   color: #888;
+}
+
+/* ─── User Info ─── */
+.order-detail-user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.order-detail-user:hover {
+  background: #f8f9fa;
+}
+
+.order-detail-user-label {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.order-detail-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-detail-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f0f0f0;
+}
+
+.order-detail-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.order-detail-user-arrow {
+  font-size: 1rem;
+  color: #ccc;
+  font-weight: 600;
 }
 
 /* ─── Status Section ─── */
@@ -147,6 +200,11 @@
 .badge-pending {
   color: #e67e22;
   background: #fef5e7;
+}
+
+.badge-expired {
+  color: #999;
+  background: #f0f0f0;
 }
 
 /* ─── Action Buttons ─── */

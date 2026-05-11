@@ -41,6 +41,39 @@
   white-space: nowrap;
 }
 
+/* ─── Categories ─── */
+.products-categories {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 48px 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.category-btn {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-btn:hover {
+  color: #1a1a1a;
+  border-color: #bbb;
+}
+
+.category-btn.active {
+  color: #fff;
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+}
+
 /* ─── Content ─── */
 .products-content {
   max-width: 1200px;

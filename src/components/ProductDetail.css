@@ -118,6 +118,34 @@
   margin: 0 0 24px;
 }
 
+.detail-category {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-category:hover {
+  background: #eef0f5;
+}
+
+.detail-category-label {
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: 500;
+}
+
+.detail-category-value {
+  font-size: 0.95rem;
+  color: #667eea;
+  font-weight: 600;
+}
+
 .detail-seller {
   margin-bottom: 24px;
   padding: 16px;

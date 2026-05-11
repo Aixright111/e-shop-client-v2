@@ -5,6 +5,8 @@ import ChatDialog from './ChatDialog';
 import { getProductDetailApi } from '../api/product';
 import './ProductDetail.css';
 
+const CATEGORIES = ['数码电子', '生活日用', '充值代练', '其他'];
+
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -72,8 +74,8 @@ function ProductDetail() {
         </div>
       </div>
       <div className="detail-content">
-        <button className="detail-back" onClick={() => navigate('/products')}>
-          ← 返回商品列表
+        <button className="detail-back" onClick={() => navigate(-1)}>
+          &larr; 返回
         </button>
 
         {loading && (
@@ -99,6 +101,16 @@ function ProductDetail() {
             <div className="detail-info">
               <h2 className="detail-name">{product.name}</h2>
               <p className="detail-desc">{product.description}</p>
+
+              <div
+                className="detail-category"
+                onClick={() => { if (product.typeId !== null && product.typeId !== undefined) navigate(`/products?typeId=${product.typeId}`); }}
+              >
+                <span className="detail-category-label">商品分类</span>
+                <span className="detail-category-value">
+                  {CATEGORIES[product.typeId] ?? '其他'}
+                </span>
+              </div>
 
               <div className="detail-seller" style={{ cursor: 'pointer' }} onClick={() => {
                 const currentUser = JSON.parse(localStorage.getItem('user') || '{}');

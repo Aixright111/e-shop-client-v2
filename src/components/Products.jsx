@@ -1,28 +1,50 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import { getProductsApi } from '../api/product';
 import './Products.css';
 
 function Products() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const initTypeId = searchParams.get('typeId');
+  const [selectedTypeId, setSelectedTypeId] = useState(initTypeId !== null ? Number(initTypeId) : null);
+
   const PAGE_SIZE = 10;
+  const CATEGORIES = [
+    { name: '全部', typeId: null },
+    { name: '数码电子', typeId: 0 },
+    { name: '生活日用', typeId: 1 },
+    { name: '充值代练', typeId: 2 },
+    { name: '其他', typeId: 3 },
+  ];
 
   useEffect(() => {
     fetchProducts(currentPage);
-  }, [currentPage]);
+  }, [currentPage, selectedTypeId]);
+
+  const handleCategoryChange = (typeId) => {
+    if (typeId === selectedTypeId) return;
+    setSelectedTypeId(typeId);
+    setCurrentPage(0);
+    if (typeId === null) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ typeId });
+    }
+  };
 
   const fetchProducts = async (page) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getProductsApi(page, PAGE_SIZE);
+      const res = await getProductsApi(page, PAGE_SIZE, selectedTypeId);
       if (res.code === 0 && res.data) {
         const items = res.data.items || [];
         const total = res.data.total || 0;
@@ -34,7 +56,7 @@ function Products() {
           return;
         }
 
-        setProducts(items);
+        setProducts(items.filter((p) => p.show !== false));
         setTotalPages(pages);
       } else {
         setError(res.message || '获取商品列表失败');
@@ -82,6 +104,17 @@ function Products() {
             <p className="products-banner-sub">发现你喜欢的商品</p>
           </div>
         </div>
+      </div>
+      <div className="products-categories">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.typeId}
+            className={`category-btn ${selectedTypeId === cat.typeId ? 'active' : ''}`}
+            onClick={() => handleCategoryChange(cat.typeId)}
+          >
+            {cat.name}
+          </button>
+        ))}
       </div>
       <div className="products-content">
 

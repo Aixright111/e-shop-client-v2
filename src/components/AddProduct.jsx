@@ -11,10 +11,18 @@ function AddProduct() {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [typeId, setTypeId] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const CATEGORIES = [
+    { name: '数码电子', typeId: 0 },
+    { name: '生活日用', typeId: 1 },
+    { name: '充值代练', typeId: 2 },
+    { name: '其他', typeId: 3 },
+  ];
 
   useEffect(() => {
     const userInfo = localStorage.getItem('user');
@@ -65,6 +73,10 @@ function AddProduct() {
       setError('请输入有效的商品价格');
       return;
     }
+    if (typeId === '') {
+      setError('请选择商品分类');
+      return;
+    }
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -80,7 +92,7 @@ function AddProduct() {
 
       // 2. 将商品信息发送到后端
       const result = await addProductApi(
-        { name: name.trim(), price: Number(price), imageUrl, description: description.trim() },
+        { name: name.trim(), price: Number(price), imageUrl, description: description.trim(), typeId },
         token
       );
 
@@ -155,6 +167,22 @@ function AddProduct() {
                 min="0"
                 step="0.01"
               />
+            </div>
+
+            {/* 商品分类 */}
+            <div className="form-group">
+              <label htmlFor="category">商品分类</label>
+              <select
+                id="category"
+                value={typeId}
+                onChange={(e) => setTypeId(Number(e.target.value))}
+                className="category-select"
+              >
+                <option value="">请选择分类</option>
+                {CATEGORIES.map((cat) => (
+                  <option key={cat.typeId} value={cat.typeId}>{cat.name}</option>
+                ))}
+              </select>
             </div>
 
             {/* 商品描述 */}
