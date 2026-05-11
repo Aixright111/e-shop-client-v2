@@ -253,6 +253,24 @@
   overflow: hidden;
 }
 
+.product-views {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.product-views-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.product-views-count {
+  font-size: 0.8rem;
+  color: #aaa;
+  font-weight: 500;
+}
+
 .product-footer {
   display: flex;
   justify-content: space-between;

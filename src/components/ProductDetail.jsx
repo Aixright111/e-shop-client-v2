@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ChatDialog from './ChatDialog';
-import { getProductDetailApi } from '../api/product';
+import { getProductDetailApi, deleteProductApi } from '../api/product';
+import { deleteProductImage } from '../api/supabase';
 import './ProductDetail.css';
 
 const CATEGORIES = ['数码电子', '生活日用', '充值代练', '其他'];
@@ -15,8 +16,12 @@ function ProductDetail() {
   const [error, setError] = useState(null);
   const [showChat, setShowChat] = useState(false);
   const [sellerId, setSellerId] = useState(null);
+  const fetchedRef = useRef(null);
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
+    if (fetchedRef.current === id) return;
+    fetchedRef.current = id;
     fetchDetail();
   }, [id]);
 
@@ -48,12 +53,28 @@ function ProductDetail() {
       alert('无法获取卖家信息');
       return;
     }
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (currentUser.id === sellerId) {
       alert('这是您自己的商品');
       return;
     }
     setShowChat(true);
+  };
+
+  const handleDelist = async () => {
+    if (!window.confirm('确定要下架该商品吗？')) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await deleteProductApi(id, token);
+      if (res.code === 0) {
+        const imageUrl = res.data || product.image || product.imageUrl;
+        if (imageUrl) deleteProductImage(imageUrl);
+        navigate(-1);
+      } else {
+        alert(res.message || '下架失败');
+      }
+    } catch {
+      alert('网络错误，请稍后重试');
+    }
   };
 
   return (
@@ -112,8 +133,22 @@ function ProductDetail() {
                 </span>
               </div>
 
+              <div className="detail-meta-stats">
+                {product.detailView !== undefined && (
+                  <div className="detail-meta-item">
+                    <span className="detail-meta-label">浏览量</span>
+                    <span className="detail-meta-value">{product.detailView}</span>
+                  </div>
+                )}
+                {product.createdAt && (
+                  <div className="detail-meta-item">
+                    <span className="detail-meta-label">上架时间</span>
+                    <span className="detail-meta-value">{formatDate(product.createdAt)}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="detail-seller" style={{ cursor: 'pointer' }} onClick={() => {
-                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
                 if (currentUser.id === sellerId) {
                   navigate('/my-store');
                 } else {
@@ -133,9 +168,15 @@ function ProductDetail() {
 
               <div className="detail-price">¥{product.price}</div>
               <div className="detail-actions">
-                <button className="detail-buy-btn" onClick={handleBuy}>
-                  立即购买
-                </button>
+                {currentUser.id === sellerId ? (
+                  <button className="detail-delist-btn" onClick={handleDelist}>
+                    下架
+                  </button>
+                ) : (
+                  <button className="detail-buy-btn" onClick={handleBuy}>
+                    立即购买
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -143,6 +184,13 @@ function ProductDetail() {
       </div>
     </div>
   );
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export default ProductDetail;

@@ -160,6 +160,12 @@ function MyStore() {
                   <div className="product-info">
                     <h3 className="product-name">{product.name}</h3>
                     <p className="product-description">{product.description}</p>
+                    {product.detailView !== undefined && (
+                      <div className="product-views">
+                        <span className="product-views-icon">&#128065;</span>
+                        <span className="product-views-count">{product.detailView}</span>
+                      </div>
+                    )}
                     <div className="product-footer">
                       <span className="product-price">{product.price}</span>
                       <button className="delist-btn" onClick={(e) => { e.stopPropagation(); handleDelist(product); }}>

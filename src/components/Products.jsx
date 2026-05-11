@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from './Navbar';
-import { getProductsApi } from '../api/product';
+import { getProductsApi, deleteProductApi } from '../api/product';
+import { deleteProductImage } from '../api/supabase';
 import './Products.css';
 
 function Products() {
@@ -68,8 +69,31 @@ function Products() {
     }
   };
 
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const token = localStorage.getItem('token');
+
+  const isMyProduct = (product) => {
+    return currentUser.id && (currentUser.id === product.userId || currentUser.id === product.userVO?.id);
+  };
+
   const handleBuy = (product) => {
     navigate(`/product/${product.id}`);
+  };
+
+  const handleDelist = async (product) => {
+    if (!window.confirm('确定要下架该商品吗？')) return;
+    try {
+      const res = await deleteProductApi(product.id, token);
+      if (res.code === 0) {
+        const imageUrl = res.data || product.image || product.imageUrl;
+        if (imageUrl) deleteProductImage(imageUrl);
+        fetchProducts(currentPage);
+      } else {
+        alert(res.message || '下架失败');
+      }
+    } catch {
+      alert('网络错误，请稍后重试');
+    }
   };
 
   const handlePrevPage = () => {
@@ -152,9 +176,15 @@ function Products() {
                     <p className="product-description">{product.description}</p>
                     <div className="product-footer">
                       <span className="product-price">{product.price}</span>
-                      <button className="buy-btn" onClick={(e) => { e.stopPropagation(); handleBuy(product); }}>
-                        购买
-                      </button>
+                      {isMyProduct(product) ? (
+                        <button className="delist-btn" onClick={(e) => { e.stopPropagation(); handleDelist(product); }}>
+                          下架
+                        </button>
+                      ) : (
+                        <button className="buy-btn" onClick={(e) => { e.stopPropagation(); handleBuy(product); }}>
+                          购买
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
