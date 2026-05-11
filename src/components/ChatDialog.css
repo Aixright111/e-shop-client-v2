@@ -55,6 +55,12 @@
   object-fit: cover;
   background: #f0f0f0;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.chat-header-avatar:hover {
+  opacity: 0.8;
 }
 
 .chat-header-name {
@@ -99,20 +105,21 @@
 }
 
 .chat-offer-btn {
-  padding: 6px 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 10px 16px;
+  background: #e67e22;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
   transition: opacity 0.2s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .chat-offer-btn:hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 /* ─── Offer Panel ─── */
@@ -440,6 +447,27 @@
   }
 }
 
+/* ─── Toast ─── */
+.chat-toast {
+  position: sticky;
+  bottom: 0;
+  text-align: center;
+  padding: 8px 16px;
+  margin-top: 8px;
+  background: #27ae60;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  animation: toast-fade-in 0.2s ease;
+  z-index: 10;
+}
+
+@keyframes toast-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ─── Offer List in Messages ─── */
 .chat-offer-list {
   display: flex;
@@ -472,6 +500,12 @@
   border: 1px solid #e8e8e8;
   border-radius: 10px;
   padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.chat-offer-item:hover {
+  background: #f8f8f8;
 }
 
 .chat-offer-item-img {
@@ -491,6 +525,13 @@
   flex: 1;
 }
 
+.chat-offer-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
 .chat-offer-item-name {
   font-size: 0.85rem;
   font-weight: 600;
@@ -498,7 +539,32 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
+
+.chat-offer-item-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.offer-status-pending {
+  color: #e67e22;
+  background: #fef5e7;
+}
+
+.offer-status-wait-pay {
+  color: #2980b9;
+  background: #ebf5fb;
+}
+
+.offer-status-paid {
+  color: #27ae60;
+  background: #eafaf1;
+}
+
 
 .chat-offer-item-price {
   font-size: 0.8rem;

@@ -75,6 +75,9 @@ function Navbar() {
             <span className="navbar-link-btn" onClick={() => navigate('/messages')}>
               消息
             </span>
+            <span className="navbar-link-btn" onClick={() => navigate('/my-quotes')}>
+              我的报价
+            </span>
             <span className="navbar-add-product" onClick={() => navigate('/product/add')}>
               上架商品
             </span>

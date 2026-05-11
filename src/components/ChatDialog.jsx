@@ -1,10 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getConversationMessagesApi, sendMessageApi } from '../api/chat';
 import { sendOfferApi, getOffersApi } from '../api/order';
 import { getUserProductsApi } from '../api/product';
 import './ChatDialog.css';
 
+const getOfferStatus = (offer) => {
+  if (offer.isPay) return { text: '已付款', className: 'offer-status-paid' };
+  if (offer.isCommit) return { text: '待付款', className: 'offer-status-wait-pay' };
+  return { text: '待确认', className: 'offer-status-pending' };
+};
+
 function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -18,6 +26,7 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [offerPrice, setOfferPrice] = useState('');
   const [offerHours, setOfferHours] = useState('');
+  const [toast, setToast] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -155,10 +164,16 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
         setSelectedProduct(null);
         setOfferPrice('');
         setOfferHours('');
-        refreshOffers();
+        setToast('报价已成功发送');
+        setTimeout(() => setToast(null), 2500);
+        await refreshOffers();
+      } else {
+        setToast(res.message || '报价发送失败');
+        setTimeout(() => setToast(null), 2500);
       }
     } catch {
-      // 发送失败不做额外处理
+      setToast('网络错误，报价发送失败');
+      setTimeout(() => setToast(null), 2500);
     } finally {
       setSending(false);
     }
@@ -174,15 +189,13 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
               src={sellerAvatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${sellerName || 'seller'}`}
               alt={sellerName}
               className="chat-header-avatar"
+              onClick={() => { onClose(); navigate(`/store/${sellerId}`); }}
             />
             <div>
               <div className="chat-header-name">{sellerName || '卖家'}</div>
             </div>
           </div>
           <div className="chat-header-actions">
-            <button className="chat-offer-btn" onClick={handleOpenOffer}>
-              发起报价
-            </button>
             <button className="chat-close-btn" onClick={onClose}>✕</button>
           </div>
         </div>
@@ -229,22 +242,29 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
           {!loading && !error && offers.length > 0 && (
             <div className="chat-offer-list">
               <div className="chat-offer-list-title">已发起的报价</div>
-              {offers.map((offer) => (
-                <div key={offer.id} className="chat-offer-item">
+              {offers.map((offer) => {
+                const status = getOfferStatus(offer);
+                return (
+                <div key={offer.id} className="chat-offer-item" onClick={() => { onClose(); navigate(`/order/${offer.id}`); }}>
                   <img
                     src={offer.imageUrl || 'https://via.placeholder.com/48'}
                     alt=""
                     className="chat-offer-item-img"
                   />
                   <div className="chat-offer-item-left">
-                    <div className="chat-offer-item-name">{offer.name || `商品 #${offer.productId}`}</div>
+                    <div className="chat-offer-item-top">
+                      <span className="chat-offer-item-name">{offer.name || `商品 #${offer.productId}`}</span>
+                      <span className={`chat-offer-item-status ${status.className}`}>{status.text}</span>
+                    </div>
                     <div className="chat-offer-item-price">报价 ¥{offer.amount}</div>
                     {offer.hours && <div className="chat-offer-item-hours">有效 {offer.hours}小时</div>}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
+          {toast && <div className="chat-toast">{toast}</div>}
           <div ref={messagesEndRef} />
         </div>
 
@@ -328,6 +348,12 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
             onKeyDown={handleKeyDown}
             disabled={loading || !!error}
           />
+          <button
+            className="chat-offer-btn"
+            onClick={handleOpenOffer}
+          >
+            报价
+          </button>
           <button
             className="chat-send-btn"
             onClick={handleSend}

@@ -9,6 +9,8 @@ import AddProduct from './components/AddProduct';
 import MessagesBox from './components/MessagesBox';
 import MyStore from './components/MyStore';
 import SellerStore from './components/SellerStore';
+import MyQuotes from './components/MyQuotes';
+import OrderDetail from './components/OrderDetail';
 
 function App() {
   return (
@@ -33,6 +35,10 @@ function App() {
         <Route path="/my-store" element={<MyStore />} />
         {/* 卖家店铺 */}
         <Route path="/store/:userId" element={<SellerStore />} />
+        {/* 我的报价 */}
+        <Route path="/my-quotes" element={<MyQuotes />} />
+        {/* 订单详情 */}
+        <Route path="/order/:id" element={<OrderDetail />} />
       </Routes>
     </Router>
   );
