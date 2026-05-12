@@ -4,55 +4,30 @@ import './Navbar.css';
 
 function Navbar() {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const checkLoginStatus = () => {
-      const token = localStorage.getItem('token');
+  // 每次渲染时直接从 localStorage 读取登录状态，保证即时反映退出登录
+  const token = localStorage.getItem('token');
+  let isLoggedIn = false;
+  let userName = '';
+  let avatarUrl = '';
+
+  if (token) {
+    try {
       const userInfo = localStorage.getItem('user');
-
       if (userInfo) {
-        try {
-          const user = JSON.parse(userInfo);
-          // 检查用户信息是否有效
-          if (user && (user.username || user.email)) {
-            setIsLoggedIn(true);
-            setAvatarUrl(user.avatarUrl || '');
-            // 优先使用username，其次使用email的@前部分
-            if (user.username) {
-              setUserName(user.username);
-            } else if (user.email) {
-              setUserName(user.email.split('@')[0]);
-            } else {
-              setUserName('用户');
-            }
-          } else {
-            setIsLoggedIn(false);
-            setUserName('');
-            setAvatarUrl('');
-          }
-        } catch (e) {
-          setIsLoggedIn(false);
-          setUserName('');
-          setAvatarUrl('');
+        const user = JSON.parse(userInfo);
+        if (user && (user.username || user.email)) {
+          isLoggedIn = true;
+          avatarUrl = user.avatarUrl || '';
+          userName = user.username || (user.email ? user.email.split('@')[0] : '用户');
         }
-      } else {
-        setIsLoggedIn(false);
-        setUserName('');
-        setAvatarUrl('');
       }
-    };
-
-    checkLoginStatus();
-    window.addEventListener('storage', checkLoginStatus);
-    return () => {
-      window.removeEventListener('storage', checkLoginStatus);
-    };
-  }, [navigate]);
+    } catch (e) {
+      // 忽略解析错误
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -99,7 +74,7 @@ function Navbar() {
                     个人信息
                   </div>
                   <div className="dropdown-divider" />
-                  <div className="dropdown-item dropdown-item-danger" onClick={() => { setDropdownOpen(false); localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/user/login'); }}>
+                  <div className="dropdown-item dropdown-item-danger" onClick={() => { setDropdownOpen(false); localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/'); }}>
                     退出登录
                   </div>
                 </div>

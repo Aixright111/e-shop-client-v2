@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ChatDialog from './ChatDialog';
 import { getProductDetailApi, deleteProductApi } from '../api/product';
+import { sendOfferApi } from '../api/order';
 import { deleteProductImage } from '../api/supabase';
 import './ProductDetail.css';
 
@@ -14,7 +15,11 @@ function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showChat, setShowChat] = useState(false);
+  const [showConsultChat, setShowConsultChat] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPrice, setOfferPrice] = useState('');
+  const [offerHours, setOfferHours] = useState('');
+  const [offerSending, setOfferSending] = useState(false);
   const [sellerId, setSellerId] = useState(null);
   const fetchedRef = useRef(null);
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -57,7 +62,48 @@ function ProductDetail() {
       alert('这是您自己的商品');
       return;
     }
-    setShowChat(true);
+    setOfferPrice(String(product.price ?? ''));
+    setOfferHours('');
+    setShowOfferModal(true);
+  };
+
+  const handleConfirmOffer = async () => {
+    const token = localStorage.getItem('token');
+    if (!token || !product) return;
+    if (!offerPrice || isNaN(Number(offerPrice)) || Number(offerPrice) <= 0) {
+      alert('请输入有效的报价金额');
+      return;
+    }
+    setOfferSending(true);
+    try {
+      const res = await sendOfferApi({
+        senderId: currentUser.id,
+        receiverId: sellerId,
+        productId: product.id,
+        price: Number(offerPrice),
+        timeHours: offerHours || undefined,
+      }, token);
+      if (res.code === 0 && res.data) {
+        setShowOfferModal(false);
+        setOfferPrice('');
+        navigate(`/order/${res.data.id}`);
+      } else {
+        alert(res.message || '报价发送失败');
+      }
+    } catch {
+      alert('网络错误，请稍后重试');
+    } finally {
+      setOfferSending(false);
+    }
+  };
+
+  const handleConsult = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/user/login');
+      return;
+    }
+    setShowConsultChat(true);
   };
 
   const handleDelist = async () => {
@@ -80,13 +126,13 @@ function ProductDetail() {
   return (
     <div className="detail-container">
       <Navbar />
-      {showChat && sellerId && (
+      {showConsultChat && sellerId && (
         <ChatDialog
           product={product}
           sellerId={sellerId}
           sellerName={product?.userVO?.username || product?.userName}
           sellerAvatar={product?.userVO?.avatarUrl}
-          onClose={() => setShowChat(false)}
+          onClose={() => setShowConsultChat(false)}
         />
       )}
       <div className="detail-banner">
@@ -178,11 +224,68 @@ function ProductDetail() {
                     </button>
                   </>
                 ) : (
-                  <button className="detail-buy-btn" onClick={handleBuy}>
-                    立即购买
-                  </button>
+                  <>
+                    <button className="detail-buy-btn" onClick={handleBuy}>
+                      立即购买
+                    </button>
+                    <button className="detail-consult-btn" onClick={handleConsult}>
+                      咨询
+                    </button>
+                  </>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {showOfferModal && product && (
+          <div className="offer-overlay" onClick={() => { if (!offerSending) setShowOfferModal(false); }}>
+            <div className="offer-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="offer-modal-header">
+                <span>确认报价</span>
+                <button className="offer-modal-close" onClick={() => { if (!offerSending) setShowOfferModal(false); }}>✕</button>
+              </div>
+              <div className="offer-modal-body">
+                <div className="offer-modal-product">
+                  <img src={product.image || product.imageUrl} alt={product.name} className="offer-modal-img" />
+                  <div>
+                    <div className="offer-modal-name">{product.name}</div>
+                    <div className="offer-modal-price">¥{product.price}</div>
+                  </div>
+                </div>
+                <div className="offer-modal-row">
+                  <span className="offer-modal-label">报价金额</span>
+                  <div className="offer-modal-price-input">
+                    <span className="offer-price-sign">¥</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={offerPrice}
+                      onChange={(e) => setOfferPrice(e.target.value)}
+                      placeholder="输入金额"
+                      className="offer-price-field"
+                    />
+                  </div>
+                </div>
+                <div className="offer-modal-row">
+                  <span className="offer-modal-label">有效时间</span>
+                  <div className="offer-modal-hours-input">
+                    <input
+                      type="number"
+                      min="1"
+                      value={offerHours}
+                      onChange={(e) => setOfferHours(e.target.value)}
+                      placeholder="小时"
+                      className="offer-hours-field"
+                    />
+                    <span className="offer-hours-suffix">小时</span>
+                  </div>
+                </div>
+              </div>
+              <button className="offer-modal-btn" onClick={handleConfirmOffer} disabled={offerSending}>
+                {offerSending ? '发送中...' : '确认报价'}
+              </button>
             </div>
           </div>
         )}

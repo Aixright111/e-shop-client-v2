@@ -222,11 +222,12 @@
 
 .detail-actions {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .detail-buy-btn {
-  padding: 14px 40px;
+  flex: 1;
+  padding: 14px 24px;
   background: #2563eb;
   color: white;
   border: none;
@@ -240,6 +241,23 @@
 .detail-buy-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+}
+
+.detail-consult-btn {
+  padding: 14px 24px;
+  background: white;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.detail-consult-btn:hover {
+  background: #f0f4ff;
+  transform: translateY(-2px);
 }
 
 .detail-edit-btn {
@@ -305,4 +323,171 @@
   .detail-price {
     font-size: 1.6rem;
   }
+}
+
+/* ─── Offer Modal ─── */
+.offer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.offer-modal {
+  background: white;
+  border-radius: 16px;
+  width: 400px;
+  max-width: 90vw;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.offer-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+}
+
+.offer-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.offer-modal-product {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.offer-modal-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f0f0f0;
+}
+
+.offer-modal-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.offer-modal-price {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+.offer-modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.offer-modal-row:last-of-type {
+  border-bottom: none;
+}
+
+.offer-modal-label {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.offer-modal-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+.offer-modal-price-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.offer-price-sign {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+.offer-price-field {
+  width: 120px;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  text-align: right;
+  outline: none;
+}
+
+.offer-price-field:focus {
+  border-color: #2563eb;
+}
+
+.offer-modal-hours-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.offer-hours-field {
+  width: 80px;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: right;
+  outline: none;
+}
+
+.offer-hours-field:focus {
+  border-color: #2563eb;
+}
+
+.offer-hours-suffix {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.offer-modal-btn {
+  width: 100%;
+  padding: 12px 0;
+  margin-top: 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.offer-modal-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.offer-modal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

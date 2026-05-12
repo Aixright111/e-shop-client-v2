@@ -124,7 +124,7 @@ function User() {
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    navigate('/user/login');
+    navigate('/');
   };
 
   const getAvatarUrl = () => {
