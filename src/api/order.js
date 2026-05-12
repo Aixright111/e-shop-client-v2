@@ -63,3 +63,14 @@ export async function payOrderApi(orderId, token) {
   });
   return res.json();
 }
+
+export async function rejectOrderApi(orderId, token) {
+  const res = await fetch(`${BASE_URL}/reject/${orderId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return res.json();
+}

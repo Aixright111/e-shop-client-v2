@@ -69,6 +69,32 @@ export async function getProductsApi(page = 0, size = 10, typeId = null) {
  * @param {string} token - 认证令牌
  * @returns {Promise} - 返回 { code, message, data } 格式的响应
  */
+/**
+ * 修改商品信息
+ * @param {Object} productData - UpdateProductsDTO { id, name, price, imageUrl, description, typeId }
+ * @param {string} token - 认证令牌
+ * @returns {Promise} - 返回 { code, message, data } 格式的响应
+ */
+export async function updateProductApi(productData, token) {
+  const body = {
+    id: productData.id,
+    name: productData.name,
+    price: productData.price,
+    imageUrl: productData.imageUrl,
+    description: productData.description,
+  };
+  if (productData.typeId !== undefined) body.typeId = productData.typeId;
+  const res = await fetch(`${BASE_URL}/update`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
 export async function deleteProductApi(productId, token) {
   const res = await fetch(`${BASE_URL}/delete/${productId}`, {
     method: 'DELETE',

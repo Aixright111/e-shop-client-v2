@@ -207,15 +207,21 @@
   background: #f0f0f0;
 }
 
+.badge-rejected {
+  color: #e74c3c;
+  background: #fdeaea;
+}
+
 /* ─── Action Buttons ─── */
 .order-detail-actions {
   padding: 20px 28px 28px;
   display: flex;
   justify-content: center;
+  gap: 12px;
 }
 
 .order-detail-btn {
-  width: 100%;
+  flex: 1;
   max-width: 320px;
   padding: 14px 0;
   font-size: 1rem;
@@ -229,6 +235,15 @@
 .order-detail-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn-reject {
+  color: #fff;
+  background: #e74c3c;
+}
+
+.btn-reject:hover:not(:disabled) {
+  opacity: 0.85;
 }
 
 .btn-commit {

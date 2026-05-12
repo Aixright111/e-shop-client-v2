@@ -318,6 +318,30 @@
   transform: translateY(0);
 }
 
+.product-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn {
+  padding: 8px 18px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
+}
+
+.edit-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
 .delist-btn {
   padding: 8px 18px;
   background: #e74c3c;

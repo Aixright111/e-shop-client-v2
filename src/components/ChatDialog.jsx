@@ -132,7 +132,7 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
         const res = await getUserProductsApi(sellerId, 0, 100);
         if (res.code === 0 && res.data) {
           const items = res.data.content || res.data.items || [];
-          setUserProducts(items);
+          setUserProducts(items.filter((p) => p.show !== false));
         }
       } catch (err) {
         console.error('加载商品失败:', err);

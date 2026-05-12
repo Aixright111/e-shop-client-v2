@@ -54,7 +54,7 @@ function MyStore() {
           return;
         }
 
-        setProducts(items.filter((p) => p.show !== false));
+        setProducts(items);
         setTotalPages(pages);
       } else {
         setError(res.message || '获取商品列表失败');
@@ -168,9 +168,14 @@ function MyStore() {
                     )}
                     <div className="product-footer">
                       <span className="product-price">{product.price}</span>
-                      <button className="delist-btn" onClick={(e) => { e.stopPropagation(); handleDelist(product); }}>
-                        下架
-                      </button>
+                      <div className="product-actions">
+                        <button className="edit-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/edit/${product.id}`); }}>
+                          修改
+                        </button>
+                        <button className="delist-btn" onClick={(e) => { e.stopPropagation(); handleDelist(product); }}>
+                          下架
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

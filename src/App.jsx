@@ -5,6 +5,7 @@ import Register from './components/Register';
 import User from './components/User';
 import Products from './components/Products';
 import ProductDetail from './components/ProductDetail';
+import EditProduct from './components/EditProduct';
 import AddProduct from './components/AddProduct';
 import MessagesBox from './components/MessagesBox';
 import MyStore from './components/MyStore';
@@ -29,6 +30,8 @@ function App() {
         <Route path="/user" element={<User />} />
         {/* 上架商品页 */}
         <Route path="/product/add" element={<AddProduct />} />
+        {/* 修改商品页 */}
+        <Route path="/product/edit/:id" element={<EditProduct />} />
         {/* 消息盒子 */}
         <Route path="/messages" element={<MessagesBox />} />
         {/* 我的店铺 */}

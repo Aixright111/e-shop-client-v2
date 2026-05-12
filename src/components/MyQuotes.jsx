@@ -5,7 +5,9 @@ import Navbar from './Navbar';
 import './MyQuotes.css';
 
 const getStatus = (item) => {
+  if (item.isExpired) return { text: '已过期', className: 'status-expired' };
   if (item.isPay) return { text: '已付款', className: 'status-paid' };
+  if (item.isReject) return { text: '已拒绝', className: 'status-rejected' };
   if (item.isCommit) return { text: '待付款', className: 'status-wait-pay' };
   return { text: '待确认', className: 'status-pending' };
 };
@@ -109,7 +111,10 @@ function MyQuotes() {
                   <span className={`quote-item-status ${status.className}`}>{status.text}</span>
                 </div>
                 <div className="quote-item-price">报价 ¥{item.amount ?? 0}</div>
-                {item.hours && <div className="quote-item-hours">有效 {item.hours}小时</div>}
+                {item.isPay && item.transactiondeadline
+                  ? <div className="quote-item-hours">订单保留至 {formatTime(item.transactiondeadline)}</div>
+                  : item.hours && <div className="quote-item-hours">有效 {item.hours}小时</div>
+                }
                 <div className="quote-item-time">
                   {item.createTime ? formatTime(item.createTime) : ''}
                 </div>

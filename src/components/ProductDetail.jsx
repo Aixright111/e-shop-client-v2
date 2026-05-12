@@ -169,9 +169,14 @@ function ProductDetail() {
               <div className="detail-price">¥{product.price}</div>
               <div className="detail-actions">
                 {currentUser.id === sellerId ? (
-                  <button className="detail-delist-btn" onClick={handleDelist}>
-                    下架
-                  </button>
+                  <>
+                    <button className="detail-edit-btn" onClick={() => navigate(`/product/edit/${id}`)}>
+                      修改
+                    </button>
+                    <button className="detail-delist-btn" onClick={handleDelist}>
+                      下架
+                    </button>
+                  </>
                 ) : (
                   <button className="detail-buy-btn" onClick={handleBuy}>
                     立即购买

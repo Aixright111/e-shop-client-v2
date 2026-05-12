@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getOrderDetailApi, commitOrderApi, payOrderApi } from '../api/order';
+import { getOrderDetailApi, commitOrderApi, payOrderApi, rejectOrderApi } from '../api/order';
 import { getUserByIdApi } from '../api/chat';
 import Navbar from './Navbar';
 import ChatDialog from './ChatDialog';
@@ -51,6 +51,23 @@ function OrderDetail() {
         setOrder((prev) => ({ ...prev, isCommit: true }));
       } else {
         alert(res.message || '确认失败');
+      }
+    } catch {
+      alert('网络错误，请稍后重试');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!window.confirm('确定要拒绝该订单吗？')) return;
+    setActionLoading(true);
+    try {
+      const res = await rejectOrderApi(id, token);
+      if (res.code === 0) {
+        setOrder((prev) => ({ ...prev, isReject: true }));
+      } else {
+        alert(res.message || '拒绝失败');
       }
     } catch {
       alert('网络错误，请稍后重试');
@@ -164,7 +181,10 @@ function OrderDetail() {
             <div className="order-detail-product-info">
               <div className="order-detail-product-name">{order.name || `商品 #${order.productId}`}</div>
               <div className="order-detail-product-price">报价 ¥{order.amount ?? 0}</div>
-              {order.hours && <div className="order-detail-hours">有效 {order.hours}小时</div>}
+              {order.isPay && order.transactiondeadline
+                ? <div className="order-detail-hours">订单保留至 {formatDeadline(order.transactiondeadline)}</div>
+                : order.hours && <div className="order-detail-hours">有效 {order.hours}小时</div>
+              }
             </div>
           </div>
 
@@ -192,8 +212,8 @@ function OrderDetail() {
             )}
             <div className="order-detail-meta-row">
               <span className="order-detail-meta-label">卖家确认</span>
-              <span className={`order-detail-badge ${order.isCommit ? 'badge-done' : 'badge-pending'}`}>
-                {order.isCommit ? '已确认' : '未确认'}
+              <span className={`order-detail-badge ${order.isCommit ? 'badge-done' : order.isReject ? 'badge-rejected' : 'badge-pending'}`}>
+                {order.isCommit ? '已确认' : order.isReject ? '已拒绝' : '未确认'}
               </span>
             </div>
             <div className="order-detail-meta-row">
@@ -207,9 +227,16 @@ function OrderDetail() {
           {isSeller && (
             <div className="order-detail-actions">
               <button
+                className="order-detail-btn btn-reject"
+                onClick={handleReject}
+                disabled={order.isCommit || order.isReject || actionLoading || order.isExpired}
+              >
+                {order.isExpired ? '已过期' : order.isReject ? '已拒绝' : '拒绝'}
+              </button>
+              <button
                 className="order-detail-btn btn-commit"
                 onClick={handleCommit}
-                disabled={order.isCommit || actionLoading || order.isExpired}
+                disabled={order.isCommit || order.isReject || actionLoading || order.isExpired}
               >
                 {order.isExpired ? '已过期' : actionLoading ? '处理中...' : order.isCommit ? '已确认' : '确认订单'}
               </button>
@@ -234,3 +261,10 @@ function OrderDetail() {
 }
 
 export default OrderDetail;
+
+function formatDeadline(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
