@@ -1,4 +1,6 @@
-const BASE_URL = 'http://localhost:8080/products';
+import { API_BASE } from './config';
+
+const BASE_URL = `${API_BASE}/products`;
 
 /**
  * 上架商品

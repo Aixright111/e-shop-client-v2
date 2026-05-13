@@ -1,4 +1,6 @@
-const BASE_URL = 'http://localhost:8080/orders';
+import { API_BASE } from './config';
+
+const BASE_URL = `${API_BASE}/orders`;
 
 export async function sendOfferApi({ senderId, receiverId, productId, price, timeHours }, token) {
   const body = {

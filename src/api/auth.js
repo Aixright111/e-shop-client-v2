@@ -3,7 +3,9 @@
  * 向后端 Spring Boot 发送登录/注册请求
  */
 
-const BASE_URL = 'http://localhost:8080/user';
+import { API_BASE } from './config';
+
+const BASE_URL = `${API_BASE}/user`;
 
 /**
  * 登录请求

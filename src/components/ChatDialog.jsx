@@ -46,6 +46,25 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
     if (!loading) inputRef.current?.focus();
   }, [loading]);
 
+  // 每 1s 轮询读取最新消息
+  useEffect(() => {
+    if (loading) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await getConversationMessagesApi(sellerId, token);
+        if (res.code === 0 && res.data) {
+          const msgs = Array.isArray(res.data) ? res.data : (res.data.messages || []);
+          if (msgs.length > 0) {
+            setMessages(msgs);
+          }
+        }
+      } catch {
+        // 静默失败
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [loading, sellerId, token]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };

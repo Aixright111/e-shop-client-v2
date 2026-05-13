@@ -1,4 +1,6 @@
-const BASE_URL = 'http://localhost:8080/chat';
+import { API_BASE } from './config';
+
+const BASE_URL = `${API_BASE}/chat`;
 
 export async function getConversationsApi(token) {
   const res = await fetch(`${BASE_URL}/conversations`, {
@@ -38,7 +40,7 @@ export async function sendMessageApi(receiverId, content, token) {
 
 export async function getUserByIdApi(userId, token) {
   
-  const res = await fetch(`http://localhost:8080/user/getInfoById/${userId}`, {
+  const res = await fetch(`${API_BASE}/user/getInfoById/${userId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
