@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { uploadProductImage } from '../../api/supabase';
-import { addProductApi } from '../../api/product';
-import Navbar from '../Navbar';
+import { uploadProductImage } from '../api/supabase';
+import { addProductApi } from '../api/product';
+import Navbar from './Navbar';
 import './AddProduct.css';
 
 function AddProduct() {
@@ -12,8 +12,10 @@ function AddProduct() {
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [typeId, setTypeId] = useState('');
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState('');
+  const [mainFile, setMainFile] = useState(null);
+  const [mainPreview, setMainPreview] = useState('');
+  const [bannerFiles, setBannerFiles] = useState([]);
+  const [bannerPreviews, setBannerPreviews] = useState([]);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,37 +33,69 @@ function AddProduct() {
     }
   }, [navigate]);
 
-  const handleFileChange = (e) => {
+  const handleMainFileChange = (e) => {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    // 校验文件类型
     if (!selected.type.startsWith('image/')) {
       setError('请选择图片文件');
       return;
     }
 
-    // 校验文件大小（最大 5MB）
     if (selected.size > 5 * 1024 * 1024) {
       setError('图片大小不能超过 5MB');
       return;
     }
 
-    setFile(selected);
+    setMainFile(selected);
     setError('');
 
-    // 生成预览
     const reader = new FileReader();
-    reader.onload = (ev) => setPreview(ev.target.result);
+    reader.onload = (ev) => setMainPreview(ev.target.result);
     reader.readAsDataURL(selected);
+  };
+
+  const handleBannerFileChange = (e) => {
+    const selected = e.target.files[0];
+    if (!selected) return;
+
+    if (!selected.type.startsWith('image/')) {
+      setError('请选择图片文件');
+      return;
+    }
+
+    if (selected.size > 5 * 1024 * 1024) {
+      setError('图片大小不能超过 5MB');
+      return;
+    }
+
+    if (bannerFiles.length >= 5) {
+      setError('最多上传5张轮播图');
+      return;
+    }
+
+    setError('');
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setBannerPreviews(prev => [...prev, ev.target.result]);
+      setBannerFiles(prev => [...prev, selected]);
+    };
+    reader.readAsDataURL(selected);
+
+    e.target.value = '';
+  };
+
+  const removeBanner = (index) => {
+    setBannerFiles(prev => prev.filter((_, i) => i !== index));
+    setBannerPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // 校验
-    if (!file) {
+    if (!mainFile) {
       setError('请选择商品图片');
       return;
     }
@@ -87,12 +121,23 @@ function AddProduct() {
     setSubmitting(true);
 
     try {
-      // 1. 上传图片到 Supabase
-      const imageUrl = await uploadProductImage(file);
+      const imageUrl = await uploadProductImage(mainFile);
 
-      // 2. 将商品信息发送到后端
+      const bannerUrls = [];
+      for (const file of bannerFiles) {
+        const url = await uploadProductImage(file);
+        bannerUrls.push(url);
+      }
+
       const result = await addProductApi(
-        { name: name.trim(), price: Number(price), imageUrl, description: description.trim(), typeId },
+        {
+          name: name.trim(),
+          price: Number(price),
+          imageUrl,
+          description: description.trim(),
+          typeId,
+          bannerUrls: bannerUrls.length > 0 ? bannerUrls : undefined,
+        },
         token
       );
 
@@ -117,15 +162,15 @@ function AddProduct() {
           <h1 className="add-product-title">上架商品</h1>
 
           <form onSubmit={handleSubmit} className="add-product-form">
-            {/* 图片上传 */}
+            {/* 主图上传 */}
             <div className="form-group">
               <label>商品图片</label>
               <div
                 className="image-upload-area"
-                onClick={() => document.getElementById('fileInput').click()}
+                onClick={() => document.getElementById('mainFileInput').click()}
               >
-                {preview ? (
-                  <img src={preview} alt="预览" className="image-preview" />
+                {mainPreview ? (
+                  <img src={mainPreview} alt="预览" className="image-preview" />
                 ) : (
                   <div className="image-placeholder">
                     <span className="upload-icon">+</span>
@@ -135,9 +180,35 @@ function AddProduct() {
               </div>
               <input
                 type="file"
-                id="fileInput"
+                id="mainFileInput"
                 accept="image/*"
-                onChange={handleFileChange}
+                onChange={handleMainFileChange}
+                hidden
+              />
+            </div>
+
+            {/* 轮播图上传 */}
+            <div className="form-group">
+              <label>轮播展示图 <span style={{ fontWeight: 400, color: '#999' }}>（最多5张，可选）</span></label>
+              <div className="banner-upload-grid">
+                {bannerPreviews.map((preview, index) => (
+                  <div key={index} className="banner-thumb-wrapper">
+                    <img src={preview} alt={`轮播图${index + 1}`} className="banner-thumb-img" />
+                    <button type="button" className="banner-thumb-remove" onClick={() => removeBanner(index)}>✕</button>
+                  </div>
+                ))}
+                {bannerPreviews.length < 5 && (
+                  <div className="banner-add-cell" onClick={() => document.getElementById('bannerFileInput').click()}>
+                    <span className="banner-add-icon">+</span>
+                    <span className="banner-add-text">添加图片</span>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                id="bannerFileInput"
+                accept="image/*"
+                onChange={handleBannerFileChange}
                 hidden
               />
             </div>

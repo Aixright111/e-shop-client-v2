@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { uploadProductImage } from '../../api/supabase';
-import { getProductDetailApi, updateProductApi } from '../../api/product';
-import Navbar from '../Navbar';
-import '../AddProduct/AddProduct.css';
+import { uploadProductImage } from '../api/supabase';
+import { getProductDetailApi, updateProductApi } from '../api/product';
+import Navbar from './Navbar';
+import './AddProduct.css';
 
 function EditProduct() {
   const { id } = useParams();
@@ -17,6 +17,9 @@ function EditProduct() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [existingImageUrl, setExistingImageUrl] = useState('');
+  const [existingBannerUrls, setExistingBannerUrls] = useState([]);
+  const [newBannerFiles, setNewBannerFiles] = useState([]);
+  const [newBannerPreviews, setNewBannerPreviews] = useState([]);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,6 +50,7 @@ function EditProduct() {
         setTypeId(p.typeId !== undefined && p.typeId !== null ? p.typeId : '');
         setExistingImageUrl(p.image || p.imageUrl || '');
         setPreview(p.image || p.imageUrl || '');
+        setExistingBannerUrls(p.bannerUrls || []);
       } else {
         setError(res.message || '获取商品信息失败');
       }
@@ -77,6 +81,46 @@ function EditProduct() {
     const reader = new FileReader();
     reader.onload = (ev) => setPreview(ev.target.result);
     reader.readAsDataURL(selected);
+  };
+
+  const handleBannerFileChange = (e) => {
+    const selected = e.target.files[0];
+    if (!selected) return;
+
+    if (!selected.type.startsWith('image/')) {
+      setError('请选择图片文件');
+      return;
+    }
+
+    if (selected.size > 5 * 1024 * 1024) {
+      setError('图片大小不能超过 5MB');
+      return;
+    }
+
+    if (existingBannerUrls.length + newBannerFiles.length >= 5) {
+      setError('最多上传5张轮播图');
+      return;
+    }
+
+    setError('');
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setNewBannerPreviews(prev => [...prev, ev.target.result]);
+      setNewBannerFiles(prev => [...prev, selected]);
+    };
+    reader.readAsDataURL(selected);
+
+    e.target.value = '';
+  };
+
+  const removeExistingBanner = (index) => {
+    setExistingBannerUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewBanner = (index) => {
+    setNewBannerFiles(prev => prev.filter((_, i) => i !== index));
+    setNewBannerPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -110,6 +154,12 @@ function EditProduct() {
         imageUrl = await uploadProductImage(file);
       }
 
+      const bannerUrls = [...existingBannerUrls];
+      for (const bannerFile of newBannerFiles) {
+        const url = await uploadProductImage(bannerFile);
+        bannerUrls.push(url);
+      }
+
       const result = await updateProductApi(
         {
           id: Number(id),
@@ -118,6 +168,7 @@ function EditProduct() {
           imageUrl,
           description: description.trim(),
           typeId,
+          bannerUrls: bannerUrls.length > 0 ? bannerUrls : undefined,
         },
         token
       );
@@ -156,7 +207,7 @@ function EditProduct() {
           <h1 className="add-product-title">修改商品</h1>
 
           <form onSubmit={handleSubmit} className="add-product-form">
-            {/* 图片上传 */}
+            {/* 主图上传 */}
             <div className="form-group">
               <label>商品图片</label>
               <div
@@ -177,6 +228,38 @@ function EditProduct() {
                 id="fileInput"
                 accept="image/*"
                 onChange={handleFileChange}
+                hidden
+              />
+            </div>
+
+            {/* 轮播图上传 */}
+            <div className="form-group">
+              <label>轮播展示图 <span style={{ fontWeight: 400, color: '#999' }}>（最多5张，可选）</span></label>
+              <div className="banner-upload-grid">
+                {existingBannerUrls.map((url, index) => (
+                  <div key={`existing-${index}`} className="banner-thumb-wrapper">
+                    <img src={url} alt={`轮播图${index + 1}`} className="banner-thumb-img" />
+                    <button type="button" className="banner-thumb-remove" onClick={() => removeExistingBanner(index)}>✕</button>
+                  </div>
+                ))}
+                {newBannerPreviews.map((preview, index) => (
+                  <div key={`new-${index}`} className="banner-thumb-wrapper">
+                    <img src={preview} alt={`新增轮播图${index + 1}`} className="banner-thumb-img" />
+                    <button type="button" className="banner-thumb-remove" onClick={() => removeNewBanner(index)}>✕</button>
+                  </div>
+                ))}
+                {existingBannerUrls.length + newBannerPreviews.length < 5 && (
+                  <div className="banner-add-cell" onClick={() => document.getElementById('bannerFileInput').click()}>
+                    <span className="banner-add-icon">+</span>
+                    <span className="banner-add-text">添加图片</span>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                id="bannerFileInput"
+                accept="image/*"
+                onChange={handleBannerFileChange}
                 hidden
               />
             </div>

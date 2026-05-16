@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getConversationMessagesApi, sendMessageApi } from '../../api/chat';
-import { sendOfferApi, getOffersApi } from '../../api/order';
-import { getUserProductsApi } from '../../api/product';
+import { getConversationMessagesApi, sendMessageApi } from '../api/chat';
+import { sendOfferApi, getOffersApi } from '../api/order';
+import { getUserProductsApi } from '../api/product';
 import './ChatDialog.css';
 
 const getOfferStatus = (offer) => {

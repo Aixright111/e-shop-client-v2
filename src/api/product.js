@@ -16,6 +16,7 @@ export async function addProductApi(productData, token) {
     description: productData.description,
   };
   if (productData.typeId !== undefined) body.typeId = productData.typeId;
+  if (productData.bannerUrls) body.bannerUrls = productData.bannerUrls;
   const res = await fetch(`${BASE_URL}/add`, {
     method: 'POST',
     headers: {
@@ -87,6 +88,7 @@ export async function updateProductApi(productData, token) {
     description: productData.description,
   };
   if (productData.typeId !== undefined) body.typeId = productData.typeId;
+  if (productData.bannerUrls) body.bannerUrls = productData.bannerUrls;
   const res = await fetch(`${BASE_URL}/update`, {
     method: 'PUT',
     headers: {

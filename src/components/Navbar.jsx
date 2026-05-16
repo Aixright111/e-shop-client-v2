@@ -21,7 +21,7 @@ function Navbar() {
         if (user && (user.username || user.email)) {
           isLoggedIn = true;
           avatarUrl = user.avatarUrl || '';
-          userName = user.username || (user.email ? user.email.split('@')[0] : '用户');
+          userName = user.name || user.username || '用户';
         }
       }
     } catch (e) {

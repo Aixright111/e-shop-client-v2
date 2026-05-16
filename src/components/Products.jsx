@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Navbar from '../Navbar';
-import { getProductsApi, deleteProductApi } from '../../api/product';
-import { deleteProductImage } from '../../api/supabase';
+import Navbar from './Navbar';
+import { getProductsApi, deleteProductApi } from '../api/product';
+import { deleteProductImage } from '../api/supabase';
 import './Products.css';
 
 function Products() {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getReceivedQuotesApi, getSentQuotesApi } from '../../api/quotes';
-import Navbar from '../Navbar';
+import { getReceivedQuotesApi, getSentQuotesApi } from '../api/quotes';
+import Navbar from './Navbar';
 import './MyQuotes.css';
 
 const getStatus = (item) => {

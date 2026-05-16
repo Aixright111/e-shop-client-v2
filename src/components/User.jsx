@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { updateUserApi } from '../../api/auth';
-import { uploadAvatarImage } from '../../api/supabase';
+import { updateUserApi } from '../api/auth';
+import { uploadAvatarImage } from '../api/supabase';
 import './User.css';
 
 function User() {

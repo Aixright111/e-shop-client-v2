@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../Navbar';
-import { getUserProductsApi } from '../../api/product';
-import '../Products/Products.css';
+import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
+import { getUserProductsApi, deleteProductApi } from '../api/product';
+import { deleteProductImage } from '../api/supabase';
+import './Products.css';
 
-function SellerStore() {
-  const { userId } = useParams();
+function MyStore() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -16,6 +16,8 @@ function SellerStore() {
   const [searchName, setSearchName] = useState('');
 
   const PAGE_SIZE = 10;
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = currentUser.id;
   const CATEGORIES = [
     { name: '全部', typeId: null },
     { name: '数码电子', typeId: 0 },
@@ -25,8 +27,12 @@ function SellerStore() {
   ];
 
   useEffect(() => {
+    if (!userId) {
+      navigate('/user/login');
+      return;
+    }
     fetchProducts(currentPage);
-  }, [currentPage, userId, selectedTypeId, searchName]);
+  }, [currentPage, selectedTypeId, searchName]);
 
   const handleCategoryChange = (typeId) => {
     if (typeId === selectedTypeId) return;
@@ -60,7 +66,7 @@ function SellerStore() {
           return;
         }
 
-        setProducts(items.filter((p) => p.show !== false));
+        setProducts(items);
         setTotalPages(pages);
       } else {
         setError(res.message || '获取商品列表失败');
@@ -69,6 +75,27 @@ function SellerStore() {
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const token = localStorage.getItem('token');
+
+  const handleDelist = async (product) => {
+    if (!window.confirm('确定要下架该商品吗？')) return;
+    try {
+      const res = await deleteProductApi(product.id, token);
+      if (res.code === 0) {
+        // 后端返回的 data 中包含图片 URL，从 Supabase 存储桶中删除
+        const imageUrl = res.data || product.image || product.imageUrl;
+        if (imageUrl) {
+          deleteProductImage(imageUrl);
+        }
+        fetchProducts(currentPage);
+      } else {
+        alert(res.message || '下架失败');
+      }
+    } catch {
+      alert('网络错误，请稍后重试');
     }
   };
 
@@ -92,8 +119,8 @@ function SellerStore() {
       <div className="products-banner">
         <div className="products-banner-inner">
           <div>
-            <h1>卖家店铺</h1>
-            <p className="products-banner-sub">该卖家的所有商品</p>
+            <h1>我的店铺</h1>
+            <p className="products-banner-sub">管理你上架的商品</p>
           </div>
           <form className="search-bar" onSubmit={handleSearch}>
             {searchName && (
@@ -139,7 +166,10 @@ function SellerStore() {
         {!loading && !error && products.length === 0 && (
           <div className="products-empty">
             <span className="products-empty-icon">📦</span>
-            <p>该卖家暂无商品</p>
+            <p>还没有上架商品</p>
+            <button className="messages-empty-btn" onClick={() => navigate('/product/add')}>
+              去上架
+            </button>
           </div>
         )}
 
@@ -162,9 +192,14 @@ function SellerStore() {
                     )}
                     <div className="product-footer">
                       <span className="product-price">{product.price}</span>
-                      <button className="buy-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }}>
-                        购买
-                      </button>
+                      <div className="product-actions">
+                        <button className="edit-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/edit/${product.id}`); }}>
+                          修改
+                        </button>
+                        <button className="delist-btn" onClick={(e) => { e.stopPropagation(); handleDelist(product); }}>
+                          下架
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -207,4 +242,4 @@ function SellerStore() {
   );
 }
 
-export default SellerStore;
+export default MyStore;

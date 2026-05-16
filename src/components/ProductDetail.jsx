@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../Navbar';
-import ChatDialog from '../ChatDialog';
-import { getProductDetailApi, deleteProductApi } from '../../api/product';
-import { sendOfferApi } from '../../api/order';
-import { deleteProductImage } from '../../api/supabase';
+import Navbar from './Navbar';
+import ChatDialog from './ChatDialog';
+import { getProductDetailApi, deleteProductApi } from '../api/product';
+import { sendOfferApi } from '../api/order';
+import { deleteProductImage } from '../api/supabase';
 import './ProductDetail.css';
 
 const CATEGORIES = ['数码电子', '生活日用', '充值代练', '其他'];
@@ -21,6 +21,7 @@ function ProductDetail() {
   const [offerHours, setOfferHours] = useState('');
   const [offerSending, setOfferSending] = useState(false);
   const [sellerId, setSellerId] = useState(null);
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const fetchedRef = useRef(null);
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -38,6 +39,7 @@ function ProductDetail() {
       if (res.code === 0 && res.data) {
         setProduct(res.data);
         setSellerId(res.data.userVO?.id || res.data.userId);
+        setCurrentImgIndex(0);
       } else {
         setError(res.message || '获取商品详情失败');
       }
@@ -47,6 +49,10 @@ function ProductDetail() {
       setLoading(false);
     }
   };
+
+  const allImages = product?.bannerUrls?.length
+    ? [product.image || product.imageUrl, ...product.bannerUrls]
+    : null;
 
   const handleBuy = () => {
     const token = localStorage.getItem('token');
@@ -159,11 +165,38 @@ function ProductDetail() {
         {!loading && !error && product && (
           <div className="detail-card">
             <div className="detail-image-wrapper">
-              <img
-                src={product.image || product.imageUrl}
-                alt={product.name}
-                className="detail-image"
-              />
+              {allImages && allImages.length > 1 ? (
+                <div className="carousel">
+                  <img src={allImages[currentImgIndex]} alt={product.name} className="detail-image" />
+                  <button
+                    className="carousel-arrow carousel-prev"
+                    onClick={(e) => { e.stopPropagation(); setCurrentImgIndex(i => (i - 1 + allImages.length) % allImages.length); }}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    className="carousel-arrow carousel-next"
+                    onClick={(e) => { e.stopPropagation(); setCurrentImgIndex(i => (i + 1) % allImages.length); }}
+                  >
+                    ›
+                  </button>
+                  <div className="carousel-dots">
+                    {allImages.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`carousel-dot ${i === currentImgIndex ? 'active' : ''}`}
+                        onClick={() => setCurrentImgIndex(i)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src={product.image || product.imageUrl}
+                  alt={product.name}
+                  className="detail-image"
+                />
+              )}
             </div>
             <div className="detail-info">
               <h2 className="detail-name">{product.name}</h2>

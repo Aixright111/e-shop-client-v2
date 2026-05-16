@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getConversationsApi, getUserByIdApi } from '../../api/chat';
-import ChatDialog from '../ChatDialog';
-import Navbar from '../Navbar';
+import { getConversationsApi, getUserByIdApi } from '../api/chat';
+import ChatDialog from './ChatDialog';
+import Navbar from './Navbar';
 import './MessagesBox.css';
 
 function MessagesBox() {
