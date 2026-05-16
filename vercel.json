@@ -1,0 +1,11 @@
+{
+  "buildCommand": "CI=false npm run build",
+  "devCommand": "npm start",
+  "outputDirectory": "build",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "http://47.93.5.103/$1"
+    }
+  ]
+}
