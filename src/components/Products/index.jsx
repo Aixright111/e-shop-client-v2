@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Navbar from './Navbar';
-import { getProductsApi, deleteProductApi } from '../api/product';
-import { deleteProductImage } from '../api/supabase';
+import Navbar from '../Navbar';
+import { getProductsApi, deleteProductApi } from '../../api/product';
+import { deleteProductImage } from '../../api/supabase';
 import './Products.css';
 
 function Products() {
@@ -13,6 +13,7 @@ function Products() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchName, setSearchName] = useState('');
 
   const initTypeId = searchParams.get('typeId');
   const [selectedTypeId, setSelectedTypeId] = useState(initTypeId !== null ? Number(initTypeId) : null);
@@ -28,7 +29,7 @@ function Products() {
 
   useEffect(() => {
     fetchProducts(currentPage);
-  }, [currentPage, selectedTypeId]);
+  }, [currentPage, selectedTypeId, searchName]);
 
   const handleCategoryChange = (typeId) => {
     if (typeId === selectedTypeId) return;
@@ -41,11 +42,22 @@ function Products() {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setSearchName(e.target.search.value);
+  };
+
+  const handleSearchClear = () => {
+    setSearchName('');
+    setCurrentPage(0);
+  };
+
   const fetchProducts = async (page) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getProductsApi(page, PAGE_SIZE, selectedTypeId);
+      const res = await getProductsApi(page, PAGE_SIZE, selectedTypeId, searchName);
       if (res.code === 0 && res.data) {
         const items = res.data.items || [];
         const total = res.data.total || 0;
@@ -127,6 +139,18 @@ function Products() {
             <h1>商品列表</h1>
             <p className="products-banner-sub">发现你喜欢的商品</p>
           </div>
+          <form className="search-bar" onSubmit={handleSearch}>
+            {searchName && (
+              <button type="button" className="search-clear" onClick={handleSearchClear}>✕</button>
+            )}
+            <input
+              name="search"
+              className="search-input"
+              placeholder="搜索商品名称..."
+              defaultValue={searchName}
+            />
+            <button type="submit" className="search-btn">搜索</button>
+          </form>
         </div>
       </div>
       <div className="products-categories">

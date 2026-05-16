@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getConversationMessagesApi, sendMessageApi } from '../api/chat';
-import { sendOfferApi, getOffersApi } from '../api/order';
-import { getUserProductsApi } from '../api/product';
+import { getConversationMessagesApi, sendMessageApi } from '../../api/chat';
+import { sendOfferApi, getOffersApi } from '../../api/order';
+import { getUserProductsApi } from '../../api/product';
 import './ChatDialog.css';
 
 const getOfferStatus = (offer) => {
@@ -178,14 +178,8 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
         timeHours: offerHours || undefined,
       }, token);
       if (res.code === 0 && res.data) {
-        setMessages((prev) => [...prev, res.data]);
-        setShowOffer(false);
-        setSelectedProduct(null);
-        setOfferPrice('');
-        setOfferHours('');
-        setToast('报价已成功发送');
-        setTimeout(() => setToast(null), 2500);
-        await refreshOffers();
+        onClose();
+        navigate(`/order/${res.data.id}`);
       } else {
         setToast(res.message || '报价发送失败');
         setTimeout(() => setToast(null), 2500);

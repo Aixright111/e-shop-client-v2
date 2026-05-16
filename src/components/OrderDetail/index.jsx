@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getOrderDetailApi, commitOrderApi, payOrderApi, rejectOrderApi } from '../api/order';
-import { getUserByIdApi } from '../api/chat';
-import Navbar from './Navbar';
-import ChatDialog from './ChatDialog';
+import { getOrderDetailApi, commitOrderApi, payOrderApi, rejectOrderApi } from '../../api/order';
+import { getUserByIdApi } from '../../api/chat';
+import Navbar from '../Navbar';
+import ChatDialog from '../ChatDialog';
 import './OrderDetail.css';
 
 function OrderDetail() {

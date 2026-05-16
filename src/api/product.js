@@ -47,9 +47,10 @@ export async function getProductDetailApi(id) {
  * @returns {Promise} - 返回 { code, message, data } 格式的响应
  *   data 包含 { content, totalPages, totalElements, number, size }
  */
-export async function getProductsApi(page = 0, size = 10, typeId = null) {
+export async function getProductsApi(page = 0, size = 10, typeId = null, name = null) {
   const body = { pageNum: page + 1, pageSize: size };
   if (typeId !== null) body.typeId = typeId;
+  if (name !== null && name.trim()) body.name = name.trim();
   const res = await fetch(`${BASE_URL}/list`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -108,9 +109,10 @@ export async function deleteProductApi(productId, token) {
   return res.json();
 }
 
-export async function getUserProductsApi(userId, page = 0, size = 10, typeId = null) {
+export async function getUserProductsApi(userId, page = 0, size = 10, typeId = null, name = null) {
   const body = { userId, pageNum: page + 1, pageSize: size };
   if (typeId !== null) body.typeId = typeId;
+  if (name !== null && name.trim()) body.name = name.trim();
   const res = await fetch(`${BASE_URL}/list`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import { getUserProductsApi, deleteProductApi } from '../api/product';
-import { deleteProductImage } from '../api/supabase';
-import './Products.css';
+import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../Navbar';
+import { getUserProductsApi } from '../../api/product';
+import '../Products/Products.css';
 
-function MyStore() {
+function SellerStore() {
+  const { userId } = useParams();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -13,10 +13,9 @@ function MyStore() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTypeId, setSelectedTypeId] = useState(null);
+  const [searchName, setSearchName] = useState('');
 
   const PAGE_SIZE = 10;
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const userId = currentUser.id;
   const CATEGORIES = [
     { name: '全部', typeId: null },
     { name: '数码电子', typeId: 0 },
@@ -26,12 +25,8 @@ function MyStore() {
   ];
 
   useEffect(() => {
-    if (!userId) {
-      navigate('/user/login');
-      return;
-    }
     fetchProducts(currentPage);
-  }, [currentPage, selectedTypeId]);
+  }, [currentPage, userId, selectedTypeId, searchName]);
 
   const handleCategoryChange = (typeId) => {
     if (typeId === selectedTypeId) return;
@@ -39,11 +34,22 @@ function MyStore() {
     setCurrentPage(0);
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setSearchName(e.target.search.value);
+  };
+
+  const handleSearchClear = () => {
+    setSearchName('');
+    setCurrentPage(0);
+  };
+
   const fetchProducts = async (page) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getUserProductsApi(userId, page, PAGE_SIZE, selectedTypeId);
+      const res = await getUserProductsApi(userId, page, PAGE_SIZE, selectedTypeId, searchName);
       if (res.code === 0 && res.data) {
         const items = res.data.items || [];
         const total = res.data.total || 0;
@@ -54,7 +60,7 @@ function MyStore() {
           return;
         }
 
-        setProducts(items);
+        setProducts(items.filter((p) => p.show !== false));
         setTotalPages(pages);
       } else {
         setError(res.message || '获取商品列表失败');
@@ -63,27 +69,6 @@ function MyStore() {
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const token = localStorage.getItem('token');
-
-  const handleDelist = async (product) => {
-    if (!window.confirm('确定要下架该商品吗？')) return;
-    try {
-      const res = await deleteProductApi(product.id, token);
-      if (res.code === 0) {
-        // 后端返回的 data 中包含图片 URL，从 Supabase 存储桶中删除
-        const imageUrl = res.data || product.image || product.imageUrl;
-        if (imageUrl) {
-          deleteProductImage(imageUrl);
-        }
-        fetchProducts(currentPage);
-      } else {
-        alert(res.message || '下架失败');
-      }
-    } catch {
-      alert('网络错误，请稍后重试');
     }
   };
 
@@ -107,9 +92,21 @@ function MyStore() {
       <div className="products-banner">
         <div className="products-banner-inner">
           <div>
-            <h1>我的店铺</h1>
-            <p className="products-banner-sub">管理你上架的商品</p>
+            <h1>卖家店铺</h1>
+            <p className="products-banner-sub">该卖家的所有商品</p>
           </div>
+          <form className="search-bar" onSubmit={handleSearch}>
+            {searchName && (
+              <button type="button" className="search-clear" onClick={handleSearchClear}>✕</button>
+            )}
+            <input
+              name="search"
+              className="search-input"
+              placeholder="搜索商品名称..."
+              defaultValue={searchName}
+            />
+            <button type="submit" className="search-btn">搜索</button>
+          </form>
         </div>
       </div>
       <div className="products-categories">
@@ -142,10 +139,7 @@ function MyStore() {
         {!loading && !error && products.length === 0 && (
           <div className="products-empty">
             <span className="products-empty-icon">📦</span>
-            <p>还没有上架商品</p>
-            <button className="messages-empty-btn" onClick={() => navigate('/product/add')}>
-              去上架
-            </button>
+            <p>该卖家暂无商品</p>
           </div>
         )}
 
@@ -168,14 +162,9 @@ function MyStore() {
                     )}
                     <div className="product-footer">
                       <span className="product-price">{product.price}</span>
-                      <div className="product-actions">
-                        <button className="edit-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/edit/${product.id}`); }}>
-                          修改
-                        </button>
-                        <button className="delist-btn" onClick={(e) => { e.stopPropagation(); handleDelist(product); }}>
-                          下架
-                        </button>
-                      </div>
+                      <button className="buy-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }}>
+                        购买
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -218,4 +207,4 @@ function MyStore() {
   );
 }
 
-export default MyStore;
+export default SellerStore;

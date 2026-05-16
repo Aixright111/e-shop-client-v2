@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import ChatDialog from './ChatDialog';
-import { getProductDetailApi, deleteProductApi } from '../api/product';
-import { sendOfferApi } from '../api/order';
-import { deleteProductImage } from '../api/supabase';
+import Navbar from '../Navbar';
+import ChatDialog from '../ChatDialog';
+import { getProductDetailApi, deleteProductApi } from '../../api/product';
+import { sendOfferApi } from '../../api/order';
+import { deleteProductImage } from '../../api/supabase';
 import './ProductDetail.css';
 
 const CATEGORIES = ['数码电子', '生活日用', '充值代练', '其他'];

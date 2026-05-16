@@ -1,22 +1,19 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { uploadProductImage } from '../api/supabase';
-import { getProductDetailApi, updateProductApi } from '../api/product';
-import Navbar from './Navbar';
+import { useNavigate } from 'react-router-dom';
+import { uploadProductImage } from '../../api/supabase';
+import { addProductApi } from '../../api/product';
+import Navbar from '../Navbar';
 import './AddProduct.css';
 
-function EditProduct() {
-  const { id } = useParams();
+function AddProduct() {
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [typeId, setTypeId] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
-  const [existingImageUrl, setExistingImageUrl] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,41 +28,20 @@ function EditProduct() {
     const userInfo = localStorage.getItem('user');
     if (!userInfo) {
       navigate('/user/login');
-      return;
     }
-    fetchProduct();
-  }, [id, navigate]);
-
-  const fetchProduct = async () => {
-    try {
-      const res = await getProductDetailApi(id);
-      if (res.code === 0 && res.data) {
-        const p = res.data;
-        setName(p.name || '');
-        setPrice(p.price !== undefined ? String(p.price) : '');
-        setDescription(p.description || '');
-        setTypeId(p.typeId !== undefined && p.typeId !== null ? p.typeId : '');
-        setExistingImageUrl(p.image || p.imageUrl || '');
-        setPreview(p.image || p.imageUrl || '');
-      } else {
-        setError(res.message || '获取商品信息失败');
-      }
-    } catch {
-      setError('网络错误，请稍后重试');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [navigate]);
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (!selected) return;
 
+    // 校验文件类型
     if (!selected.type.startsWith('image/')) {
       setError('请选择图片文件');
       return;
     }
 
+    // 校验文件大小（最大 5MB）
     if (selected.size > 5 * 1024 * 1024) {
       setError('图片大小不能超过 5MB');
       return;
@@ -74,6 +50,7 @@ function EditProduct() {
     setFile(selected);
     setError('');
 
+    // 生成预览
     const reader = new FileReader();
     reader.onload = (ev) => setPreview(ev.target.result);
     reader.readAsDataURL(selected);
@@ -83,6 +60,11 @@ function EditProduct() {
     e.preventDefault();
     setError('');
 
+    // 校验
+    if (!file) {
+      setError('请选择商品图片');
+      return;
+    }
     if (!name.trim()) {
       setError('请输入商品名称');
       return;
@@ -105,28 +87,20 @@ function EditProduct() {
     setSubmitting(true);
 
     try {
-      let imageUrl = existingImageUrl;
-      if (file) {
-        imageUrl = await uploadProductImage(file);
-      }
+      // 1. 上传图片到 Supabase
+      const imageUrl = await uploadProductImage(file);
 
-      const result = await updateProductApi(
-        {
-          id: Number(id),
-          name: name.trim(),
-          price: Number(price),
-          imageUrl,
-          description: description.trim(),
-          typeId,
-        },
+      // 2. 将商品信息发送到后端
+      const result = await addProductApi(
+        { name: name.trim(), price: Number(price), imageUrl, description: description.trim(), typeId },
         token
       );
 
       if (result.code === 0) {
-        alert('商品修改成功！');
-        navigate(`/product/${id}`);
+        alert('商品上架成功！');
+        navigate('/products');
       } else {
-        setError(result.message || '修改失败');
+        setError(result.message || '上架失败');
       }
     } catch (err) {
       setError(err.message || '操作失败，请稍后重试');
@@ -135,25 +109,12 @@ function EditProduct() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="add-product-container">
-        <Navbar />
-        <div className="add-product-content">
-          <div className="add-product-card" style={{ textAlign: 'center', padding: '80px 0', color: '#999' }}>
-            加载中...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="add-product-container">
       <Navbar />
       <div className="add-product-content">
         <div className="add-product-card">
-          <h1 className="add-product-title">修改商品</h1>
+          <h1 className="add-product-title">上架商品</h1>
 
           <form onSubmit={handleSubmit} className="add-product-form">
             {/* 图片上传 */}
@@ -245,7 +206,7 @@ function EditProduct() {
               className="submit-btn"
               disabled={submitting}
             >
-              {submitting ? '修改中...' : '确认修改'}
+              {submitting ? '上架中...' : '确认上架'}
             </button>
           </form>
         </div>
@@ -254,4 +215,4 @@ function EditProduct() {
   );
 }
 
-export default EditProduct;
+export default AddProduct;
