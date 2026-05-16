@@ -18,7 +18,6 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
-  const [conversationId, setConversationId] = useState(null);
   const [offers, setOffers] = useState([]);
   const [showOffer, setShowOffer] = useState(false);
   const [userProducts, setUserProducts] = useState([]);
@@ -36,6 +35,7 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
   useEffect(() => {
     if (!token || !currentUser.id || !sellerId) return;
     initChat();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -85,11 +85,6 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
 
       // 兼容两种格式：data 直接是消息数组，或 data.messages
       const messages = Array.isArray(msgRes.data) ? msgRes.data : (msgRes.data.messages || []);
-      const convId = msgRes.data.conversationId || msgRes.data.id || messages[0]?.conversationId;
-
-      if (convId) {
-        setConversationId(convId);
-      }
 
       setMessages(messages);
 
@@ -100,17 +95,6 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const refreshOffers = async () => {
-    try {
-      const res = await getOffersApi(currentUser.id, sellerId, token);
-      if (res.code === 0) {
-        setOffers(res.data || []);
-      }
-    } catch {
-      // 静默失败
     }
   };
 

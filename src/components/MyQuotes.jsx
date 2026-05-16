@@ -28,14 +28,17 @@ function MyQuotes() {
       navigate('/user/login');
       return;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchReceived();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchSent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchReceived = async () => {

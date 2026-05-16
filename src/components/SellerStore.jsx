@@ -26,6 +26,7 @@ function SellerStore() {
 
   useEffect(() => {
     fetchProducts(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, userId, selectedTypeId, searchName]);
 
   const handleCategoryChange = (typeId) => {

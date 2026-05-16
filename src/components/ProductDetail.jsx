@@ -29,6 +29,7 @@ function ProductDetail() {
     if (fetchedRef.current === id) return;
     fetchedRef.current = id;
     fetchDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchDetail = async () => {

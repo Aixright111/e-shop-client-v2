@@ -32,6 +32,7 @@ function MyStore() {
       return;
     }
     fetchProducts(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, selectedTypeId, searchName]);
 
   const handleCategoryChange = (typeId) => {

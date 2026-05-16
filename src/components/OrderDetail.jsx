@@ -24,6 +24,7 @@ function OrderDetail() {
       return;
     }
     fetchOrder();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchOrder = async () => {
@@ -94,7 +95,6 @@ function OrderDetail() {
 
   const isSeller = currentUser.id === order?.sellerid;
   const isBuyer = currentUser.id === order?.buyerid;
-  const canCommit = isSeller && !order?.isCommit;
   const canPay = isBuyer && order?.isCommit && !order?.isPay;
 
   const handleOpenChat = async () => {
