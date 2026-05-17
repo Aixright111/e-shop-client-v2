@@ -59,7 +59,29 @@ export async function markMessagesAsReadApi(conversationId, token) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ conversationId }),
+    body: JSON.stringify(conversationId),
+  });
+  return res.json();
+}
+
+export async function getUnreadTotalApi(token) {
+  const res = await fetch(`${BASE_URL}/unread/total`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return res.json();
+}
+
+export async function getUnreadByConversationApi(token) {
+  const res = await fetch(`${BASE_URL}/unread/conversations`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
   });
   return res.json();
 }

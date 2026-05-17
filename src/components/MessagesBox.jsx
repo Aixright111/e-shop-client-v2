@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getConversationsApi, getUserByIdApi } from '../api/chat';
+import { getConversationsApi, getUserByIdApi, getUnreadByConversationApi, markMessagesAsReadApi } from '../api/chat';
 import ChatDialog from './ChatDialog';
 import Navbar from './Navbar';
 import './MessagesBox.css';
@@ -11,6 +11,7 @@ function MessagesBox() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [chatTarget, setChatTarget] = useState(null);
+  const [unreadMap, setUnreadMap] = useState({});
 
   const token = localStorage.getItem('token');
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -26,6 +27,7 @@ function MessagesBox() {
       return;
     }
     fetchConversations();
+    fetchUnreadCounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -60,7 +62,26 @@ function MessagesBox() {
     }
   };
 
+  const fetchUnreadCounts = async () => {
+    try {
+      const res = await getUnreadByConversationApi(token);
+      if (res.code === 0 && res.data) {
+        const map = {};
+        res.data.forEach(item => {
+          const convId = item.conversationId ?? item.conversation_id ?? item.id;
+          const count = item.count ?? item.unreadCount ?? item.unread_count ?? 0;
+          if (convId != null) map[String(convId)] = count;
+        });
+        setUnreadMap(map);
+      }
+    } catch {}
+  };
+
   const openChat = async (conv) => {
+    markMessagesAsReadApi(conv.id, token).then(() => {
+      window.dispatchEvent(new CustomEvent('unread-changed'));
+    }).catch(() => {});
+    setUnreadMap(prev => ({ ...prev, [conv.id]: 0 }));
     const otherUserId = conv.participantUserIds?.find((id) => id !== currentUser.id);
     try {
       const res = await getUserByIdApi(otherUserId, token);
@@ -134,7 +155,12 @@ function MessagesBox() {
                 />
                 <div className="message-info">
                   <div className="message-top">
-                    <span className="message-name">{conv.otherUserName || '用户' + otherUserId}</span>
+                    <div className="message-name-row">
+                      <span className="message-name">{conv.otherUserName || '用户' + otherUserId}</span>
+                      {unreadMap[conv.id] > 0 && (
+                        <span className="message-unread">{unreadMap[conv.id]}</span>
+                      )}
+                    </div>
                     <span className="message-time">{conv.lastMessageAt ? formatTimeAgo(conv.lastMessageAt) : ''}</span>
                   </div>
                   <div className="message-bottom">

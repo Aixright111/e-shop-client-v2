@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import { getUnreadTotalApi } from '../api/chat';
 import './Navbar.css';
 
 function Navbar() {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [unreadTotal, setUnreadTotal] = useState(0);
   const dropdownRef = useRef(null);
 
   // 每次渲染时直接从 localStorage 读取登录状态，保证即时反映退出登录
@@ -39,6 +41,24 @@ function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!token) { setUnreadTotal(0); return; }
+    const fetchUnread = async () => {
+      try {
+        const res = await getUnreadTotalApi(token);
+        if (res.code === 0) setUnreadTotal(res.data || 0);
+      } catch {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    const handleUnreadChanged = () => fetchUnread();
+    window.addEventListener('unread-changed', handleUnreadChanged);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('unread-changed', handleUnreadChanged);
+    };
+  }, [token]);
+
   return (
     <nav className="navbar">
       <div className="navbar-brand" onClick={() => navigate('/')}>
@@ -49,6 +69,7 @@ function Navbar() {
           <>
             <span className="navbar-link-btn" onClick={() => navigate('/messages')}>
               消息
+              {unreadTotal > 0 && <span className="unread-badge">{unreadTotal > 99 ? '99+' : unreadTotal}</span>}
             </span>
             <span className="navbar-link-btn" onClick={() => navigate('/my-quotes')}>
               我的报价

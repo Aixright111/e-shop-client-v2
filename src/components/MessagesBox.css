@@ -148,6 +148,12 @@
   color: #1a1a1a;
 }
 
+.message-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .message-time {
   font-size: 0.75rem;
   color: #bbb;

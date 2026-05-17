@@ -1,16 +1,10 @@
 import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import './Home.css';
 
 function Home() {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const userInfo = localStorage.getItem('user');
-    setIsLoggedIn(!!userInfo);
-  }, []);
+  const isLoggedIn = !!localStorage.getItem('user');
 
   const handleStartShopping = () => {
     if (isLoggedIn) {

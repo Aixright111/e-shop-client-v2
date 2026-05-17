@@ -133,6 +133,35 @@
   border-color: #bbb;
 }
 
+.sort-group {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.sort-btn {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+  color: #1a1a1a;
+  border-color: #bbb;
+}
+
+.sort-btn.active {
+  color: #fff;
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+}
+
 .category-btn.active {
   color: #fff;
   background: #1a1a1a;

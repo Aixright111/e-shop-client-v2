@@ -12,10 +12,12 @@ import MyStore from './components/MyStore';
 import SellerStore from './components/SellerStore';
 import MyQuotes from './components/MyQuotes';
 import OrderDetail from './components/OrderDetail';
+import AiChat from './components/AiChat';
 
 function App() {
   return (
     <Router>
+      <AiChat />
       <Routes>
         {/* 主页 */}
         <Route path="/" element={<Home />} />

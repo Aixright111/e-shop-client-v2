@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getConversationMessagesApi, sendMessageApi } from '../api/chat';
+import { getConversationMessagesApi, sendMessageApi, markMessagesAsReadApi } from '../api/chat';
 import { sendOfferApi, getOffersApi } from '../api/order';
 import { getUserProductsApi } from '../api/product';
 import './ChatDialog.css';
@@ -28,6 +28,8 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
   const [toast, setToast] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const userScrolledUpRef = useRef(false);
 
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const token = localStorage.getItem('token');
@@ -37,10 +39,6 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
     initChat();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   useEffect(() => {
     if (!loading) inputRef.current?.focus();
@@ -65,9 +63,21 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
     return () => clearInterval(interval);
   }, [loading, sellerId, token]);
 
+  const handleScroll = () => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    userScrolledUpRef.current = el.scrollHeight - el.scrollTop - el.clientHeight > 80;
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    if (!userScrolledUpRef.current) {
+      scrollToBottom();
+    }
+  }, [messages]);
 
   const initChat = async () => {
     setLoading(true);
@@ -106,6 +116,7 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
     try {
       const res = await sendMessageApi(sellerId, text, token);
       if (res.code === 0 && res.data) {
+        userScrolledUpRef.current = false;
         setMessages((prev) => [...prev, res.data]);
         setInput('');
       }
@@ -198,7 +209,7 @@ function ChatDialog({ product, sellerId, sellerName, sellerAvatar, onClose }) {
         </div>
 
         {/* 消息列表 */}
-        <div className="chat-messages">
+        <div className="chat-messages" ref={messagesContainerRef} onScroll={handleScroll}>
           {loading && (
             <div className="chat-loading">加载中...</div>
           )}

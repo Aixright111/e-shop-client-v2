@@ -14,6 +14,7 @@ function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchName, setSearchName] = useState('');
+  const [sortBy, setSortBy] = useState(null); // null | 'price_asc' | 'price_desc' | 'detailviews'
 
   const initTypeId = searchParams.get('typeId');
   const [selectedTypeId, setSelectedTypeId] = useState(initTypeId !== null ? Number(initTypeId) : null);
@@ -30,7 +31,21 @@ function Products() {
   useEffect(() => {
     fetchProducts(currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, selectedTypeId, searchName]);
+  }, [currentPage, selectedTypeId, searchName, sortBy]);
+
+  const togglePriceSort = () => {
+    setSortBy(prev => {
+      if (prev === 'price_asc') return 'price_desc';
+      if (prev === 'price_desc') return null;
+      return 'price_asc';
+    });
+    setCurrentPage(0);
+  };
+
+  const toggleDetailViewsSort = () => {
+    setSortBy(prev => prev === 'detailviews' ? null : 'detailviews');
+    setCurrentPage(0);
+  };
 
   const handleCategoryChange = (typeId) => {
     if (typeId === selectedTypeId) return;
@@ -58,7 +73,11 @@ function Products() {
     setLoading(true);
     setError(null);
     try {
-      const res = await getProductsApi(page, PAGE_SIZE, selectedTypeId, searchName);
+      let sortField, sortOrder;
+      if (sortBy === 'price_asc') { sortField = 'price'; sortOrder = 'asc'; }
+      else if (sortBy === 'price_desc') { sortField = 'price'; sortOrder = 'desc'; }
+      else if (sortBy === 'detailviews') { sortField = 'detailviews'; sortOrder = 'desc'; }
+      const res = await getProductsApi(page, PAGE_SIZE, selectedTypeId, searchName, sortField, sortOrder);
       if (res.code === 0 && res.data) {
         const items = res.data.items || [];
         const total = res.data.total || 0;
@@ -164,6 +183,20 @@ function Products() {
             {cat.name}
           </button>
         ))}
+        <div className="sort-group">
+          <button
+            className={`sort-btn ${sortBy && sortBy.startsWith('price') ? 'active' : ''}`}
+            onClick={togglePriceSort}
+          >
+            价格 {sortBy === 'price_asc' ? '↑' : sortBy === 'price_desc' ? '↓' : ''}
+          </button>
+          <button
+            className={`sort-btn ${sortBy === 'detailviews' ? 'active' : ''}`}
+            onClick={toggleDetailViewsSort}
+          >
+            大家都在看
+          </button>
+        </div>
       </div>
       <div className="products-content">
 
