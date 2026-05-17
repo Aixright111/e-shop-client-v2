@@ -91,9 +91,10 @@ function AiChat() {
       for await (const chunk of stream) {
         const delta = chunk.choices[0]?.delta?.content || '';
         content += delta;
+        const currentContent = content;
         setMessages((prev) => {
           const next = [...prev];
-          next[next.length - 1] = { role: 'assistant', content, products: fetchedProducts };
+          next[next.length - 1] = { role: 'assistant', content: currentContent, products: fetchedProducts };
           return next;
         });
       }

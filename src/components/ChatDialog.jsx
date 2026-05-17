@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getConversationMessagesApi, sendMessageApi, markMessagesAsReadApi } from '../api/chat';
+import { getConversationMessagesApi, sendMessageApi } from '../api/chat';
 import { sendOfferApi, getOffersApi } from '../api/order';
 import { getUserProductsApi } from '../api/product';
 import './ChatDialog.css';
