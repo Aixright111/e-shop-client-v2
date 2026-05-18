@@ -35,7 +35,6 @@ function Register() {
     try {
       const res = await sendCodeApi(email);
       if (res.code === 0 || res.code === 200) {
-        setCodeSent(true);
         startCountdown();
       } else {
         setError(res.message || '发送验证码失败');
