@@ -13,7 +13,6 @@ function Register() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [sendingCode, setSendingCode] = useState(false);
-  const [codeSent, setCodeSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
   const startCountdown = () => {
