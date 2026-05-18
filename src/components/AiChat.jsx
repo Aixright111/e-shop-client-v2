@@ -43,6 +43,16 @@ function AiChat() {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
+  // 监听退出登录事件，实时清空对话
+  useEffect(() => {
+    const handler = () => {
+      setMessages([]);
+      localStorage.removeItem(STORAGE_KEY);
+    };
+    window.addEventListener('clearAiChat', handler);
+    return () => window.removeEventListener('clearAiChat', handler);
+  }, []);
+
   const saveMessages = (msgs) => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs)); } catch {}
   };
@@ -211,7 +221,7 @@ function AiChat() {
             <div className="aichat-messages">
               {messages.length === 0 && (
                 <div className="aichat-empty">
-                  <p>有什么可以帮助你的吗？<br/>试试：看看有哪些商品</p>
+                  <p>有什么可以帮助你的吗？<br/>试试：我要吃的</p>
                 </div>
               )}
               {messages.map((msg, i) => (
@@ -245,7 +255,7 @@ function AiChat() {
               <input
                 ref={inputRef}
                 className="aichat-input"
-                placeholder="试试：看看有哪些商品"
+                placeholder="试试：我要吃的"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}

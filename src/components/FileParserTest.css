@@ -1,0 +1,155 @@
+.parser-test-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.parser-test-content {
+  padding: 100px 24px 48px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.parser-test-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.parser-test-card h1 {
+  font-size: 1.6rem;
+  color: #333;
+  margin: 0 0 4px 0;
+  text-align: center;
+}
+
+.parser-test-desc {
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+  margin: 0 0 24px 0;
+}
+
+.parser-file-area {
+  margin-bottom: 20px;
+}
+
+.parser-upload-box {
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color: #999;
+}
+
+.parser-upload-box:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.parser-upload-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.parser-upload-icon {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #ccc;
+  line-height: 1;
+}
+
+.parser-file-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.parser-file-name {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.parser-file-size {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.parser-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.parser-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.parser-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.parser-error {
+  margin-top: 16px;
+  color: #e74c3c;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 10px;
+  background: #fdf0ef;
+  border-radius: 8px;
+}
+
+.parser-result {
+  margin-top: 20px;
+}
+
+.parser-result h3,
+.parser-logs h3 {
+  font-size: 1rem;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.parser-content {
+  background: #f5f7fa;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 400px;
+  overflow: auto;
+  border: 1px solid #e0e0e0;
+}
+
+.parser-logs {
+  margin-top: 20px;
+}
+
+.parser-log-box {
+  background: #1e1e1e;
+  color: #0f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  max-height: 300px;
+  overflow: auto;
+  font-family: monospace;
+}

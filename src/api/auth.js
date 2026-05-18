@@ -29,11 +29,44 @@ export async function loginApi(email, password) {
  * @param {string} password - 密码
  * @returns {Promise} - 返回 { code, message, data } 格式的响应
  */
-export async function registerApi(username, email, password) {
+export async function sendCodeApi(email) {
+  const res = await fetch(`${BASE_URL}/send-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+  try { return JSON.parse(text); } catch { return { code: 200 }; }
+}
+
+export async function verifyCodeApi(email, code) {
+  const res = await fetch(`${BASE_URL}/verify-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+  try { return JSON.parse(text); } catch { return { code: 200 }; }
+}
+
+export async function resetPasswordApi(email, code, newPassword) {
+  const res = await fetch(`${BASE_URL}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code, password: newPassword }),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+  try { return JSON.parse(text); } catch { return { code: 200 }; }
+}
+
+export async function registerApi(username, email, password, code) {
   const res = await fetch(`${BASE_URL}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password }),
+    body: JSON.stringify({ username, email, password, code }),
   });
   return res.json();
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadProductImage } from '../api/supabase';
 import { addProductApi } from '../api/product';
+import { parseFile } from '../api/zhipu';
 import Navbar from './Navbar';
 import './AddProduct.css';
 
@@ -18,12 +19,15 @@ function AddProduct() {
   const [bannerPreviews, setBannerPreviews] = useState([]);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const CATEGORIES = [
     { name: '数码电子', typeId: 0 },
     { name: '生活日用', typeId: 1 },
     { name: '充值代练', typeId: 2 },
     { name: '其他', typeId: 3 },
+    { name: '食品酒水', typeId: 4 },
+    { name: '衣服穿搭', typeId: 5 },
   ];
 
   useEffect(() => {
@@ -89,6 +93,44 @@ function AddProduct() {
   const removeBanner = (index) => {
     setBannerFiles(prev => prev.filter((_, i) => i !== index));
     setBannerPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAiFill = async () => {
+    if (!mainFile || aiLoading) return;
+    setAiLoading(true);
+    setError('');
+
+    try {
+      const prompt = `你是一个电商文案专家。识别图中商品，严格按以下JSON格式返回，不要多余内容：
+
+{
+  "name": "商品名称",
+  "price": 价格数字（根据商品价值合理估算，必须有价格）,
+  "description": "生动有吸引力的商品描述，至少40字，突出卖点和适用场景",
+  "category": "分类名称（数码电子/生活日用/充值代练/其他/食品酒水/衣服穿搭）"
+}`;
+      const content = await parseFile(mainFile, prompt);
+      console.log('[AI上架] 解析结果:', content);
+
+      // 尝试 JSON 解析
+      let info = {};
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try { info = JSON.parse(jsonMatch[0]); } catch {}
+      }
+
+      if (info.name) setName(info.name);
+      if (info.price) setPrice(String(info.price));
+      if (info.description) setDescription(info.description);
+      if (info.category) {
+        const found = CATEGORIES.find(c => info.category.includes(c.name) || c.name.includes(info.category));
+        if (found) setTypeId(found.typeId);
+      }
+    } catch (err) {
+      setError('AI 解析失败：' + (err.message || '未知错误'));
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -185,6 +227,18 @@ function AddProduct() {
                 onChange={handleMainFileChange}
                 hidden
               />
+            </div>
+
+            {/* AI 一键上架 */}
+            <div className="form-group">
+              <button
+                type="button"
+                className="ai-btn"
+                onClick={handleAiFill}
+                disabled={!mainFile || aiLoading}
+              >
+                {aiLoading ? 'AI 解析中...' : 'AI 一键上架'}
+              </button>
             </div>
 
             {/* 轮播图上传 */}

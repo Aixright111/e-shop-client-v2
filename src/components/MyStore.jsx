@@ -25,6 +25,7 @@ function MyStore() {
     { name: '生活日用', typeId: 1 },
     { name: '充值代练', typeId: 2 },
     { name: '其他', typeId: 3 },
+    { name: '食品酒水', typeId: 4 },
   ];
 
   useEffect(() => {

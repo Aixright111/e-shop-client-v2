@@ -70,6 +70,34 @@
   color: #aaa;
 }
 
+.code-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.send-code-btn {
+  padding: 0 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.send-code-btn:hover:not(:disabled) {
+  background: #5a6fd6;
+}
+
+.send-code-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .error-message {
   color: #e74c3c;
   font-size: 13px;

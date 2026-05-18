@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { updateUserApi } from '../api/auth';
+import { updateUserApi, sendCodeApi, resetPasswordApi } from '../api/auth';
 import { uploadAvatarImage } from '../api/supabase';
 import './User.css';
 
@@ -16,6 +16,15 @@ function User() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [showPwdChange, setShowPwdChange] = useState(false);
+  const [pwdCode, setPwdCode] = useState('');
+  const [pwdNew, setPwdNew] = useState('');
+  const [pwdConfirm, setPwdConfirm] = useState('');
+  const [pwdError, setPwdError] = useState('');
+  const [sendingPwdCode, setSendingPwdCode] = useState(false);
+  const [pwdCountdown, setPwdCountdown] = useState(0);
+  const [pwdSubmitting, setPwdSubmitting] = useState(false);
+  const pwdTimerRef = useRef(null);
 
   useEffect(() => {
     const fetchUserInfo = () => {
@@ -96,6 +105,7 @@ function User() {
       if (res.code === 0) {
         const updatedUser = res.data || { ...user, username: formData.username, email: formData.email, avatarUrl };
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        window.dispatchEvent(new CustomEvent('user-updated'));
         setUser(updatedUser);
         setEditing(false);
         setAvatarFile(null);
@@ -121,10 +131,66 @@ function User() {
     setEditing(false);
   };
 
+  const startPwdCountdown = () => {
+    setPwdCountdown(60);
+    clearInterval(pwdTimerRef.current);
+    pwdTimerRef.current = setInterval(() => {
+      setPwdCountdown((prev) => {
+        if (prev <= 1) { clearInterval(pwdTimerRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleSendPwdCode = async () => {
+    if (!user?.email) { setPwdError('无法获取邮箱'); return; }
+    setSendingPwdCode(true);
+    setPwdError('');
+    try {
+      const res = await sendCodeApi(user.email);
+      if (res.code === 0 || res.code === 200) {
+        startPwdCountdown();
+      } else {
+        setPwdError(res.message || '发送验证码失败');
+      }
+    } catch (err) {
+      setPwdError(err.message || '网络错误');
+    } finally {
+      setSendingPwdCode(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setPwdError('');
+    if (!pwdCode) { setPwdError('请输入验证码'); return; }
+    if (!pwdNew) { setPwdError('请输入新密码'); return; }
+    if (pwdNew !== pwdConfirm) { setPwdError('两次输入的密码不一致'); return; }
+    if (pwdNew.length < 6) { setPwdError('密码长度不能少于6位'); return; }
+
+    setPwdSubmitting(true);
+    try {
+      const res = await resetPasswordApi(user.email, pwdCode, pwdNew);
+      if (res.code === 0 || res.code === 200) {
+        alert('密码修改成功');
+        setShowPwdChange(false);
+        setPwdCode('');
+        setPwdNew('');
+        setPwdConfirm('');
+      } else {
+        setPwdError(res.message || '修改失败');
+      }
+    } catch (err) {
+      setPwdError(err.message || '网络错误');
+    } finally {
+      setPwdSubmitting(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('aiChatMessages');
+    window.dispatchEvent(new CustomEvent('clearAiChat'));
     navigate('/');
   };
 
@@ -235,9 +301,68 @@ function User() {
           </div>
         )}
 
+        <div style={{ marginTop: 32 }}>
+          <button className="pwd-btn" onClick={() => setShowPwdChange(true)}>修改密码</button>
+        </div>
+
         <div className="user-actions">
           <button className="logout-btn" onClick={handleLogout}>退出登录</button>
         </div>
+
+        {/* 修改密码弹窗 */}
+
+        {/* 修改密码弹窗 */}
+        {showPwdChange && (
+          <div className="modal-overlay" onClick={() => setShowPwdChange(false)}>
+            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>修改密码</h3>
+                <button className="modal-close" onClick={() => setShowPwdChange(false)}>✕</button>
+              </div>
+              <div className="modal-body">
+                <div className="code-input-row" style={{ marginBottom: 14 }}>
+                  <input
+                    type="text"
+                    value={pwdCode}
+                    onChange={(e) => setPwdCode(e.target.value)}
+                    placeholder="验证码"
+                    maxLength={6}
+                    style={{ flex: 1, padding: '10px 12px', border: '1px solid #ddd', borderRadius: 6, fontSize: 14, outline: 'none' }}
+                  />
+                  <button
+                    type="button"
+                    className="send-code-btn"
+                    onClick={handleSendPwdCode}
+                    disabled={sendingPwdCode || pwdCountdown > 0}
+                  >
+                    {sendingPwdCode ? '发送中...' : pwdCountdown > 0 ? `${pwdCountdown}s` : '发送验证码'}
+                  </button>
+                </div>
+                <input
+                  type="password"
+                  value={pwdNew}
+                  onChange={(e) => setPwdNew(e.target.value)}
+                  placeholder="新密码（至少6位）"
+                  className="modal-input"
+                />
+                <input
+                  type="password"
+                  value={pwdConfirm}
+                  onChange={(e) => setPwdConfirm(e.target.value)}
+                  placeholder="确认新密码"
+                  className="modal-input"
+                />
+                {pwdError && <div className="form-error">{pwdError}</div>}
+              </div>
+              <div className="modal-footer">
+                <button className="cancel-btn" onClick={() => setShowPwdChange(false)}>取消</button>
+                <button className="save-btn" onClick={handleChangePassword} disabled={pwdSubmitting}>
+                  {pwdSubmitting ? '修改中...' : '确认'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -131,6 +131,30 @@
   border-radius: 8px;
 }
 
+/* AI 一键上架按钮 */
+.ai-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ai-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.ai-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .submit-btn {
   padding: 14px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

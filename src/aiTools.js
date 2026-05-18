@@ -1,6 +1,6 @@
 /**
  * AI 工具：语义搜索
- * 遍历商品列表取出后端预存的 embedding，与用户查询向量比对，过滤相似度 > 0.7 的商品
+ * 用 LLM 优化用户提示词后，遍历商品列表比对 embedding，返回匹配结果
  */
 import OpenAI from 'openai';
 import { getProductsApi } from './api/product';
@@ -17,7 +17,19 @@ function getDashscope() {
   return dashscope;
 }
 
-const SIMILARITY_THRESHOLD = 0.3;
+let deepseek = null;
+function getDeepseek() {
+  if (!deepseek) {
+    deepseek = new OpenAI({
+      apiKey: process.env.REACT_APP_DEEPSEEK_API_KEY,
+      baseURL: 'https://api.deepseek.com',
+      dangerouslyAllowBrowser: true,
+    });
+  }
+  return deepseek;
+}
+
+const SIMILARITY_THRESHOLD = 0.4;
 const PAGE_SIZE = 100;
 
 // 获取所有商品（分页拉取）
@@ -36,7 +48,7 @@ async function fetchAllProducts() {
   return allItems;
 }
 
-// 获取文本的 embedding 向量（1024 维，与后端保持一致）
+// 获取文本的 embedding 向量（1024 维）
 async function getEmbedding(text) {
   const res = await getDashscope().embeddings.create({
     model: 'text-embedding-v4',
@@ -44,6 +56,20 @@ async function getEmbedding(text) {
     dimensions: 1024,
   });
   return res.data[0].embedding;
+}
+
+// 用 LLM 将用户提示词优化为电商搜索词
+async function optimizeQueryWithLLM(rawQuery) {
+  const res = await getDeepseek().chat.completions.create({
+    model: 'deepseek-v4-pro',
+    messages: [
+      { role: 'system', content: '你是一个电商搜索词优化助手。将用户的自然语言输入转换为精准的电商搜索关键词，只输出关键词本身，不要解释，不要多余内容。' },
+      { role: 'user', content: rawQuery },
+    ],
+  });
+  const optimized = res.choices[0]?.message?.content?.trim() || rawQuery;
+  console.log('[AI选商品] 原始查询:', rawQuery, '| LLM优化后:', optimized);
+  return optimized;
 }
 
 // 余弦相似度
@@ -59,52 +85,26 @@ function cosineSimilarity(a, b) {
 }
 
 /**
- * 电商查询优化：为自然语言查询添加上下文关键词，提升语义匹配效果
- */
-function optimizeQuery(rawQuery) {
-  const q = rawQuery.trim();
-
-  const patterns = [
-    { match: /修|坏|维修|故障|服务|安装|售后/i, append: '维修服务 修理 安装' },
-    { match: /吃|食|零食|水果|饮料|食品|奶茶|咖啡|面包/i, append: '食品 零食 饮料 美食' },
-    { match: /手机|电脑|电子|数码|充电|耳机|手表|智能|笔记本|平板/i, append: '电子产品 数码 智能设备' },
-    { match: /衣服|穿|服装|鞋|裤|外套|裙子|帽子|袜子|穿搭/i, append: '服装 服饰 穿戴' },
-    { match: /家具|家居|床|桌|椅|沙发|柜|灯|装饰/i, append: '家具 家居用品' },
-    { match: /日用|生活|厨房|餐具|洗漱|毛巾|收纳/i, append: '日用百货 生活用品' },
-    { match: /便宜|优惠|打折|促销|特价|划算/i, append: '优惠 特价 性价比 折扣' },
-  ];
-
-  const matched = patterns.filter((p) => p.match.test(q)).map((p) => p.append);
-
-  if (matched.length === 0) {
-    return `${q} 商品 产品 购物`;
-  }
-
-  return `${q} ${matched.join(' ')}`;
-}
-
-/**
  * 语义搜索入口
  * @param {Object} args - { query: string } 用户输入的查询文本
- * @returns {Array} 相似度 > 0.7 的商品列表，按相似度降序
+ * @returns {Array} 匹配的商品列表，按相似度降序
  */
 export async function executeSearchProducts(args) {
   const { query } = args;
   if (!query || !query.trim()) return [];
 
-  // 1. 获取全部商品（后端已预存 embedding）
+  // 1. 用 LLM 优化用户提示词
+  const searchQuery = await optimizeQueryWithLLM(query.trim());
+
+  // 2. 获取全部商品（后端已预存 embedding）
   const allProducts = await fetchAllProducts();
   if (allProducts.length === 0) return [];
 
-  // 2. 优化查询文本（添加上下文关键词）
-  const optimizedQuery = optimizeQuery(query.trim());
-  console.log('[AI选商品] 原始查询:', query.trim(), '| 优化查询:', optimizedQuery);
-
   // 3. 获取优化后查询的 embedding
-  const queryEmb = await getEmbedding(optimizedQuery);
+  const queryEmb = await getEmbedding(searchQuery);
   console.log('[AI选商品] 查询向量维度:', queryEmb.length);
 
-  // 4. 遍历商品，用商品预存的 embedding 计算余弦相似度
+  // 4. 遍历商品比对余弦相似度
   const matched = [];
   for (const product of allProducts) {
     if (!product.embedding) {
@@ -118,11 +118,11 @@ export async function executeSearchProducts(args) {
     }
   }
 
-  // 5. 按相似度降序
+  // 按相似度降序
   matched.sort((a, b) => b.similarity - a.similarity);
-  console.log(`[AI选商品] 查询 "${query.trim()}" 共 ${allProducts.length} 个, 命中 ${matched.length} 个 (阈值 ${SIMILARITY_THRESHOLD})`);
+  console.log(`[AI选商品] 查询 "${query.trim()}" → "${searchQuery}" 共 ${allProducts.length} 个, 命中 ${matched.length} 个 (阈值 ${SIMILARITY_THRESHOLD})`);
 
-  // 6. 用匹配到的商品信息重新获取商品列表
+  // 用匹配到的商品信息重新获取商品列表
   const matchedIds = new Set(matched.map((p) => p.id));
   const reFetched = [];
   let page = 0;
@@ -132,13 +132,11 @@ export async function executeSearchProducts(args) {
     const items = (res.data.items || []).filter((p) => p.show !== false && matchedIds.has(p.id));
     if (items.length === 0 && page > 0) break;
     reFetched.push(...items);
-    // 如果本页已经没有更多匹配项，提前结束
     const allInPage = (res.data.items || []).filter((p) => p.show !== false);
     if (allInPage.length < PAGE_SIZE) break;
     page++;
   }
 
-  // 按原始相似度顺序返回
   const resultMap = new Map(reFetched.map((p) => [p.id, p]));
   const matchedScoreMap = new Map(matched.map((p) => [p.id, p.similarity]));
 

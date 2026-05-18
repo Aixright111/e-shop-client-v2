@@ -7,7 +7,7 @@ import { sendOfferApi } from '../api/order';
 import { deleteProductImage } from '../api/supabase';
 import './ProductDetail.css';
 
-const CATEGORIES = ['数码电子', '生活日用', '充值代练', '其他'];
+const CATEGORIES = ['数码电子', '生活日用', '充值代练', '其他', '食品酒水'];
 
 function ProductDetail() {
   const { id } = useParams();

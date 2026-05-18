@@ -19,12 +19,14 @@ function Products() {
   const initTypeId = searchParams.get('typeId');
   const [selectedTypeId, setSelectedTypeId] = useState(initTypeId !== null ? Number(initTypeId) : null);
 
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 8;
   const CATEGORIES = [
     { name: '全部', typeId: null },
     { name: '数码电子', typeId: 0 },
     { name: '生活日用', typeId: 1 },
     { name: '充值代练', typeId: 2 },
+    { name: '食品酒水', typeId: 4 },
+    { name: '衣服穿搭', typeId: 5 },
     { name: '其他', typeId: 3 },
   ];
 
