@@ -40,15 +40,17 @@ function MessagesBox() {
         const list = res.data || [];
         const enriched = await Promise.all(list.map(async (conv) => {
           const otherUserId = getOtherUserId(conv);
-          let otherUserName = '用户' + otherUserId;
+          let otherUserName = '用户' + (otherUserId ?? '');
           let otherUserAvatar = '';
-          try {
-            const userRes = await getUserByIdApi(otherUserId, token);
-            if (userRes.code === 0) {
-              otherUserName = userRes.data.name || otherUserName;
-              otherUserAvatar = userRes.data.avatarUrl || '';
-            }
-          } catch {}
+          if (otherUserId) {
+            try {
+              const userRes = await getUserByIdApi(otherUserId, token);
+              if (userRes.code === 0) {
+                otherUserName = userRes.data.name || otherUserName;
+                otherUserAvatar = userRes.data.avatarUrl || '';
+              }
+            } catch {}
+          }
           return { ...conv, otherUserName, otherUserAvatar };
         }));
         setConversations(enriched.filter((c) => c.lastMessage));
@@ -83,16 +85,14 @@ function MessagesBox() {
     }).catch(() => {});
     setUnreadMap(prev => ({ ...prev, [conv.id]: 0 }));
     const otherUserId = conv.participantUserIds?.find((id) => id !== currentUser.id);
+    if (!otherUserId) return;
     try {
       const res = await getUserByIdApi(otherUserId, token);
-      if (res.code === 0) {
-        setChatTarget({
-          sellerId: otherUserId,
-          sellerName: res.data.name || '用户' + otherUserId,
-          sellerAvatar: res.data.avatarUrl || '',
-        });
-        console.log(res.data);
-      } 
+      setChatTarget({
+        sellerId: otherUserId,
+        sellerName: (res.code === 0 ? res.data.name : null) || '用户' + otherUserId,
+        sellerAvatar: res.code === 0 ? (res.data.avatarUrl || '') : '',
+      });
     } catch {
       setChatTarget({
         sellerId: otherUserId,

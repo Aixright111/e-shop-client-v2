@@ -246,6 +246,8 @@ function Products() {
                         <button className="delist-btn" onClick={(e) => { e.stopPropagation(); handleDelist(product); }}>
                           下架
                         </button>
+                      ) : product.isOrder ? (
+                        <span className="ordered-tag">已有报价</span>
                       ) : (
                         <button className="buy-btn" onClick={(e) => { e.stopPropagation(); handleBuy(product); }}>
                           购买

@@ -3,7 +3,7 @@
  * 用 LLM 优化用户提示词后，遍历商品列表比对 embedding，返回匹配结果
  */
 import OpenAI from 'openai';
-import { getProductsApi } from './api/product';
+import { aiGetProductsApi as getProductsApi } from './api/product';
 
 let dashscope = null;
 function getDashscope() {

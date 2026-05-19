@@ -197,9 +197,13 @@ function SellerStore() {
                     )}
                     <div className="product-footer">
                       <span className="product-price">{product.price}</span>
-                      <button className="buy-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }}>
-                        购买
-                      </button>
+                      {product.isOrder ? (
+                        <span className="ordered-tag">已有报价</span>
+                      ) : (
+                        <button className="buy-btn" onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }}>
+                          购买
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

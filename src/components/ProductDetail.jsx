@@ -257,6 +257,13 @@ function ProductDetail() {
                       下架
                     </button>
                   </>
+                ) : product.isOrder ? (
+                  <>
+                    <span className="ordered-tag" style={{ padding: '14px 48px', borderRadius: 8, fontSize: 16, fontWeight: 600, background: '#f0f0f0', color: '#999' }}>已有报价</span>
+                    <button className="detail-consult-btn" onClick={handleConsult}>
+                      咨询
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button className="detail-buy-btn" onClick={handleBuy}>

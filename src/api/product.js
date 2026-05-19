@@ -62,6 +62,20 @@ export async function getProductsApi(page = 0, size = 10, typeId = null, name = 
   return res.json();
 }
 
+export async function aiGetProductsApi(page = 0, size = 10, typeId = null, name = null, sortField = null, sortOrder = null) {
+  const body = { pageNum: page + 1, pageSize: size };
+  if (typeId !== null) body.typeId = typeId;
+  if (name !== null && name.trim()) body.name = name.trim();
+  if (sortField) body.sortField = sortField;
+  if (sortOrder) body.sortOrder = sortOrder;
+  const res = await fetch(`${BASE_URL}/aiList`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
 /**
  * 分页获取用户自己的商品列表
  * @param {number} userId - 用户ID
