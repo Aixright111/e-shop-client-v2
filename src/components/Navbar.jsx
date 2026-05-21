@@ -66,6 +66,9 @@ function Navbar() {
               消息
               {unreadTotal > 0 && <span className="unread-badge">{unreadTotal > 99 ? '99+' : unreadTotal}</span>}
             </span>
+            <span className="navbar-link-btn" onClick={() => navigate('/favorites')}>
+              收藏
+            </span>
             <span className="navbar-link-btn" onClick={() => navigate('/my-quotes')}>
               我的报价
             </span>

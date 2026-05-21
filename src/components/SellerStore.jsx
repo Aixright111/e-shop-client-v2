@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import ChatDialog from './ChatDialog';
 import { getUserProductsApi } from '../api/product';
+import { getUserByIdApi } from '../api/chat';
 import './Products.css';
+import './SellerStore.css';
 
 function SellerStore() {
   const { userId } = useParams();
@@ -14,7 +17,10 @@ function SellerStore() {
   const [error, setError] = useState(null);
   const [selectedTypeId, setSelectedTypeId] = useState(null);
   const [searchName, setSearchName] = useState('');
-  const [sortBy, setSortBy] = useState(null); // null | 'price_asc' | 'price_desc' | 'detailviews'
+  const [sortBy, setSortBy] = useState(null);
+  const [showConsultChat, setShowConsultChat] = useState(false);
+  const [sellerName, setSellerName] = useState('');
+  const [sellerAvatar, setSellerAvatar] = useState('');
 
   const PAGE_SIZE = 10;
   const CATEGORIES = [
@@ -30,6 +36,17 @@ function SellerStore() {
     fetchProducts(currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, userId, selectedTypeId, searchName, sortBy]);
+
+  const token = localStorage.getItem('token');
+  useEffect(() => {
+    if (!token || !userId) return;
+    getUserByIdApi(userId, token).then(res => {
+      if (res.code === 0 && res.data) {
+        setSellerName(res.data.username || res.data.name || '');
+        setSellerAvatar(res.data.avatarUrl || '');
+      }
+    }).catch(() => {});
+  }, [userId, token]);
 
   const togglePriceSort = () => {
     setSortBy(prev => {
@@ -60,6 +77,11 @@ function SellerStore() {
   const handleSearchClear = () => {
     setSearchName('');
     setCurrentPage(0);
+  };
+
+  const handleConsult = () => {
+    if (!token) { navigate('/user/login'); return; }
+    setShowConsultChat(true);
   };
 
   const fetchProducts = async (page) => {
@@ -110,6 +132,15 @@ function SellerStore() {
   return (
     <div className="products-container">
       <Navbar />
+      {showConsultChat && (
+        <ChatDialog
+          product={null}
+          sellerId={Number(userId)}
+          sellerName={sellerName}
+          sellerAvatar={sellerAvatar}
+          onClose={() => setShowConsultChat(false)}
+        />
+      )}
       <div className="products-banner">
         <div className="products-banner-inner">
           <div>
@@ -130,6 +161,24 @@ function SellerStore() {
           </form>
         </div>
       </div>
+
+      {sellerName && (
+        <div className="seller-store-card">
+          <img
+            src={sellerAvatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${sellerName}`}
+            alt={sellerName}
+            className="seller-store-avatar-lg"
+          />
+          <div className="seller-store-meta">
+            <span className="seller-store-name-lg">{sellerName}</span>
+            <span className="seller-store-label">卖家</span>
+          </div>
+          <button className="seller-store-consult-btn" onClick={handleConsult}>
+            咨询卖家
+          </button>
+        </div>
+      )}
+
       <div className="products-categories">
         {CATEGORIES.map((cat) => (
           <button

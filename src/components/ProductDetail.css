@@ -15,6 +15,7 @@
 }
 
 .detail-banner h1 {
+  
   font-size: 1.8rem;
   font-weight: 700;
   color: #1a1a1a;
@@ -218,6 +219,44 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-fav-btn {
+  -webkit-text-fill-color: initial;
+  background: white;
+  border: 2px solid #f59e0b;
+  color: #f59e0b;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 14px;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.detail-fav-btn.faved {
+  background: #f59e0b;
+  color: #1a1a1a;
+}
+
+.detail-fav-btn:hover:not(:disabled) {
+  background: #fef3c7;
+  transform: translateY(-1px);
+}
+
+.detail-fav-btn.faved:hover:not(:disabled) {
+  background: #d97706;
+  opacity: 0.9;
+}
+
+.detail-fav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .detail-actions {

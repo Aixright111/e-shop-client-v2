@@ -5,6 +5,7 @@ import ChatDialog from './ChatDialog';
 import { getProductDetailApi, deleteProductApi } from '../api/product';
 import { sendOfferApi } from '../api/order';
 import { deleteProductImage } from '../api/supabase';
+import { addFavoriteApi, removeFavoriteApi, getFavoritesApi } from '../api/favorite';
 import './ProductDetail.css';
 
 const CATEGORIES = ['数码电子', '生活日用', '充值代练', '其他', '食品酒水'];
@@ -22,6 +23,8 @@ function ProductDetail() {
   const [offerSending, setOfferSending] = useState(false);
   const [sellerId, setSellerId] = useState(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
   const fetchedRef = useRef(null);
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -101,6 +104,34 @@ function ProductDetail() {
       alert('网络错误，请稍后重试');
     } finally {
       setOfferSending(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !id) return;
+    getFavoritesApi(token).then(res => {
+      if (res.code === 0 && res.data) {
+        const favIds = res.data.map(f => f.productId || f.id || f.product?.id);
+        if (favIds.includes(Number(id))) setIsFavorited(true);
+      }
+    }).catch(() => {});
+  }, [id]);
+
+  const toggleFavorite = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    setFavLoading(true);
+    try {
+      if (isFavorited) {
+        const res = await removeFavoriteApi(id, token);
+        if (res.code === 0 || res.code === 200) setIsFavorited(false);
+      } else {
+        const res = await addFavoriteApi(id, token);
+        if (res.code === 0 || res.code === 200) setIsFavorited(true);
+      }
+    } catch {} finally {
+      setFavLoading(false);
     }
   };
 
@@ -216,7 +247,7 @@ function ProductDetail() {
               <div className="detail-meta-stats">
                 {product.detailView !== undefined && (
                   <div className="detail-meta-item">
-                    <span className="detail-meta-label">浏览量</span>
+                    <span className="detail-meta-label">浏览</span>
                     <span className="detail-meta-value">{product.detailView}</span>
                   </div>
                 )}
@@ -246,7 +277,19 @@ function ProductDetail() {
                 </div>
               </div>
 
-              <div className="detail-price">¥{product.price}</div>
+              <div className="detail-price">
+                ¥{product.price}
+                {currentUser.id !== sellerId && (
+                  <button
+                    className={`detail-fav-btn ${isFavorited ? 'faved' : ''}`}
+                    onClick={toggleFavorite}
+                    disabled={favLoading}
+                    title={isFavorited ? '取消收藏' : '收藏'}
+                  >
+                    {isFavorited ? '已收藏' : '收藏'}
+                  </button>
+                )}
+              </div>
               <div className="detail-actions">
                 {currentUser.id === sellerId ? (
                   <>

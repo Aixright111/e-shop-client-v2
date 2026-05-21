@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import { getProductsApi, deleteProductApi } from '../api/product';
 import { deleteProductImage } from '../api/supabase';
+import { getRecommendApi } from '../api/favorite';
 import './Products.css';
 
 function Products() {
@@ -15,6 +16,8 @@ function Products() {
   const [error, setError] = useState(null);
   const [searchName, setSearchName] = useState('');
   const [sortBy, setSortBy] = useState(null); // null | 'price_asc' | 'price_desc' | 'detailviews'
+  const [recommendations, setRecommendations] = useState([]);
+  const searchRef = useRef(null);
 
   const initTypeId = searchParams.get('typeId');
   const [selectedTypeId, setSelectedTypeId] = useState(initTypeId !== null ? Number(initTypeId) : null);
@@ -34,6 +37,17 @@ function Products() {
     fetchProducts(currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, selectedTypeId, searchName, sortBy]);
+
+  const token = localStorage.getItem('token');
+  useEffect(() => {
+    if (!token) return;
+    getRecommendApi(token).then(res => {
+      if (res.code === 0) {
+        const data = res.data || res.result || [];
+        setRecommendations(Array.isArray(data) ? data : []);
+      }
+    }).catch(() => {});
+  }, [token]);
 
   const togglePriceSort = () => {
     setSortBy(prev => {
@@ -71,6 +85,12 @@ function Products() {
     setCurrentPage(0);
   };
 
+  const handleRecommendClick = (name) => {
+    if (searchRef.current) searchRef.current.value = name;
+    setSearchName(name);
+    setCurrentPage(0);
+  };
+
   const fetchProducts = async (page) => {
     setLoading(true);
     setError(null);
@@ -104,7 +124,6 @@ function Products() {
   };
 
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const token = localStorage.getItem('token');
 
   const isMyProduct = (product) => {
     return currentUser.id && (currentUser.id === product.userId || currentUser.id === product.userVO?.id);
@@ -161,18 +180,30 @@ function Products() {
             <h1>商品列表</h1>
             <p className="products-banner-sub">发现你喜欢的商品</p>
           </div>
-          <form className="search-bar" onSubmit={handleSearch}>
-            {searchName && (
-              <button type="button" className="search-clear" onClick={handleSearchClear}>✕</button>
+          <div className="search-wrapper">
+            <form className="search-bar" onSubmit={handleSearch}>
+              {searchName && (
+                <button type="button" className="search-clear" onClick={handleSearchClear}>✕</button>
+              )}
+              <input
+                name="search"
+                className="search-input"
+                placeholder="搜索商品名称..."
+                defaultValue={searchName}
+                ref={searchRef}
+              />
+              <button type="submit" className="search-btn">搜索</button>
+            </form>
+            {recommendations.length > 0 && (
+              <div className="search-recommend">
+                {recommendations.map((name, i) => (
+                  <span key={i} className="recommend-tag" onClick={() => handleRecommendClick(name)}>
+                    {name}
+                  </span>
+                ))}
+              </div>
             )}
-            <input
-              name="search"
-              className="search-input"
-              placeholder="搜索商品名称..."
-              defaultValue={searchName}
-            />
-            <button type="submit" className="search-btn">搜索</button>
-          </form>
+          </div>
         </div>
       </div>
       <div className="products-categories">
@@ -196,7 +227,7 @@ function Products() {
             className={`sort-btn ${sortBy === 'detailviews' ? 'active' : ''}`}
             onClick={toggleDetailViewsSort}
           >
-            大家都在看
+           浏览量
           </button>
         </div>
       </div>

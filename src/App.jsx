@@ -13,6 +13,7 @@ import SellerStore from './components/SellerStore';
 import MyQuotes from './components/MyQuotes';
 import OrderDetail from './components/OrderDetail';
 import AiChat from './components/AiChat';
+import Favorites from './components/Favorites';
 import FileParserTest from './components/FileParserTest';
 import ForgotPassword from './components/ForgotPassword';
 
@@ -50,6 +51,8 @@ function App() {
         <Route path="/file-parser-test" element={<FileParserTest />} />
         {/* 忘记密码 */}
         <Route path="/user/forgot-password" element={<ForgotPassword />} />
+        {/* 我的收藏 */}
+        <Route path="/favorites" element={<Favorites />} />
       </Routes>
     </Router>
   );

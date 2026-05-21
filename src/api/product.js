@@ -73,7 +73,10 @@ export async function aiGetProductsApi(page = 0, size = 10, typeId = null, name 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  return res.json();
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  if (!text) return { code: 0, data: { items: [], total: 0 } };
+  try { return JSON.parse(text); } catch { return { code: 0, data: { items: [], total: 0 } }; }
 }
 
 /**
