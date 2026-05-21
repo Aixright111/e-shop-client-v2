@@ -13,6 +13,7 @@ function Favorites() {
   useEffect(() => {
     if (!token) { navigate('/user/login'); return; }
     fetchFavorites();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchFavorites = async () => {
